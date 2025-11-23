@@ -1,0 +1,508 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: #e9f5ec;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+/* ===== Header ===== */
+.dept-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 15px 25px;
+  background-color: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.back-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+.back-btn:hover {
+  background-color: #f0f0f0;
+}
+.dept-title {
+  font-weight: 600;
+  color: #006633;
+  margin: 0;
+}
+
+/* ===== Dashboard Layout ===== */
+.dashboard-layout {
+  display: flex;
+  height: calc(100vh - 100px);
+  gap: 20px;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 320px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.add-btn {
+  background-color: #006633;
+  color: white;
+  font-size: 22px;
+  font-weight: bold;
+  border: none;
+  border-radius: 50%;
+  width: 38px;
+  height: 38px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.add-btn:hover {
+  background-color: #004d26;
+}
+
+/* Class list items */
+.class-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.class-item {
+  background: #f6f6f6;
+  padding: 12px 14px;
+  border-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.class-item:hover {
+  background: #e9f5ec;
+}
+.class-item.active {
+  background: #d8f3dc;
+}
+.class-item strong {
+  color: #004d26;
+}
+.class-item small {
+  color: #666;
+}
+
+/* ⋮ Menu */
+.class-menu {
+  position: relative;
+}
+.menu-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #006633;
+  padding: 2px 5px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+.menu-btn:hover {
+  background: rgba(0, 102, 51, 0.1);
+}
+.menu-dropdown {
+  position: absolute;
+  right: 0;
+  top: 25px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  min-width: 110px;
+  z-index: 10;
+}
+.menu-dropdown button {
+  background: none;
+  border: none;
+  text-align: left;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  color: #333;
+  transition: background 0.2s;
+}
+.menu-dropdown button:hover {
+  background: #f3f8f3;
+}
+.hidden {
+  display: none;
+}
+
+/* Inline edit inputs */
+.inline-input {
+  border: none;
+  border-bottom: 1px solid #ccc;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  outline: none;
+  width: 90%;
+  margin-bottom: 3px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+.inline-input:focus {
+  border-bottom: 1px solid #006633;
+  background: #f7fff7;
+}
+
+/* ===== Inline Save / Cancel buttons ===== */
+.inline-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 6px;
+}
+.save-btn, .cancel-edit-btn {
+  border: none;
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.save-btn {
+  background: #006633;
+  color: #fff;
+}
+.save-btn:hover {
+  background: #004d26;
+}
+.cancel-edit-btn {
+  background: #ccc;
+  color: #333;
+}
+.cancel-edit-btn:hover {
+  background: #b5b5b5;
+}
+
+/* ===== Modal ===== */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.4);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+.modal-overlay.show {
+  display: flex;
+}
+.modal-box {
+  background: white;
+  padding: 25px 30px;
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  text-align: left;
+  width: 320px;
+  animation: fadeIn 0.2s ease-in-out;
+}
+.modal-box h4 {
+  margin: 0 0 10px;
+  color: #0b3d2e;
+  font-weight: 600;
+  font-size: 18px;
+}
+.modal-box p {
+  color: #333;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+.cancel-btn, .confirm-btn {
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+.cancel-btn {
+  background: #e9f5ec;
+  color: #333;
+}
+.cancel-btn:hover {
+  background: #d6f0da;
+}
+.confirm-btn {
+  background: #006633;
+  color: white;
+}
+.confirm-btn:hover {
+  background: #004d26;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== Toast Notification ===== */
+/* ===== Toast Notification (Link Copied) ===== */
+.toast {
+  position: fixed;
+  top: 25px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-20px);
+  background: #00994c;
+  color: #fff;
+  padding: 14px 26px;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 600;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.35s ease;
+  z-index: 200;
+  letter-spacing: 0.3px;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Toast icon */
+.toast::before {
+  content: "✔";
+  font-weight: bold;
+  font-size: 16px;
+}
+
+
+/* ===== Students Panel ===== */
+.main-content {
+  flex: 1;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 25px;
+  overflow-y: auto;
+  transition: all 0.3s ease;
+}
+.panel-title {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #004d26;
+}
+.student-view {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.student-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  background: #f6f6f6;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+.attendance-status label {
+  margin-right: 8px;
+  font-size: 14px;
+}
+
+/* Scrollbar */
+.main-content::-webkit-scrollbar {
+  width: 6px;
+}
+.main-content::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .dashboard-layout {
+    flex-direction: column;
+  }
+  .sidebar {
+    width: 100%;
+  }
+}
+
+/* ===== Attendance Table (Student View) ===== */
+.attendance-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+.attendance-table th,
+.attendance-table td {
+  border: 1px solid #ddd;
+  padding: 10px 12px;
+  text-align: left;
+}
+
+.attendance-table th {
+  background-color: #e9f5ec;
+  color: #004d26;
+  font-weight: 600;
+}
+
+.attendance-table td a {
+  color: #006633;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.attendance-table td a:hover {
+  text-decoration: underline;
+}
+
+/* Attendance Summary */
+.attendance-summary {
+  font-weight: 600;
+  color: #004d26;
+  margin-bottom: 15px;
+  font-size: 15px;
+}
+
+/* ===== Join Class Modal for Students ===== */
+#joinClassModal {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.4);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  transition: all 0.2s ease-in-out;
+}
+
+#joinClassModal.show {
+  display: flex;
+}
+
+#joinClassModal .modal-box {
+  background: #fff;
+  padding: 25px 30px;
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  text-align: left;
+  width: 360px;
+  max-width: 90%;
+  animation: fadeIn 0.25s ease-in-out;
+}
+
+#joinClassModal h4 {
+  margin: 0 0 10px;
+  color: #0b3d2e;
+  font-weight: 600;
+  font-size: 18px;
+}
+
+#joinClassModal p {
+  color: #333;
+  font-size: 14px;
+  margin-bottom: 15px;
+}
+
+#joinClassModal input[type="text"] {
+  width: 100%;
+  padding: 10px 12px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  outline: none;
+  transition: border 0.2s, background 0.2s;
+}
+
+#joinClassModal input[type="text"]:focus {
+  border-color: #006633;
+  background-color: #f7fff7;
+}
+
+#joinClassModal .modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+#joinClassModal .cancel-btn,
+#joinClassModal .confirm-btn {
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+#joinClassModal .cancel-btn {
+  background: #e9f5ec;
+  color: #333;
+}
+#joinClassModal .cancel-btn:hover {
+  background: #d6f0da;
+}
+
+#joinClassModal .confirm-btn {
+  background: #006633;
+  color: #fff;
+}
+#joinClassModal .confirm-btn:hover {
+  background: #004d26;
+}
+
+/* ===== Reuse teacher modal fade-in animation ===== */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.panel-main-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #004d26;
+  margin-bottom: 2px;
+}
+
+.panel-class-code {
+  font-size: 13px;
+  color: #666;     /* clean gray */
+  font-weight: 400;
+  margin-top: -4px;  /* pulls it closer to the title */
+}

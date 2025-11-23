@@ -1,0 +1,448 @@
+body {
+  font-family: "Poppins", sans-serif;
+  background-color: #e9f5ec;
+  margin: 0;
+  padding: 0;
+}
+
+/* Layout */
+.profile-layout {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  padding: 60px 40px;
+  transition: opacity 0.2s ease-in-out;
+}
+
+/* Left Panel */
+.left-panel {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 40px 30px;
+  width: 330px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Profile Picture */
+.profile-pic {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin: 0 auto 20px;
+  border: 5px solid #006633;
+  background-color: #cce5d0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  font-weight: 700;
+  color: #006633;
+}
+
+.profile-pic img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.upload-label {
+  position: absolute;
+  bottom: 5px;
+  right: 10px;
+  background-color: #ffd700;
+  color: #006633;
+  font-weight: bold;
+  border-radius: 50%;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+/* Profile Name */
+#profileName {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #006633;
+  margin-bottom: 15px;
+}
+
+/* Verify Button */
+.verify-btn {
+  background-color: #ffd700;
+  color: #006633;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 25px;
+  transition: all 0.3s;
+}
+.verify-btn:hover {
+  background-color: #ffec80;
+}
+
+/* Account Section */
+.account-section {
+  border-top: 1px solid #ddd;
+  padding-top: 20px;
+  margin-bottom: 20px;
+}
+.account-section h3 {
+  color: #006633;
+  margin-bottom: 10px;
+}
+
+/* Buttons */
+.action-btn {
+  display: block;
+  width: 100%;
+  background-color: #006633;
+  color: white;
+  border: none;
+  padding: 10px 0;
+  border-radius: 8px;
+  font-weight: 500;
+  margin: 8px 0;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+.action-btn:hover {
+  background-color: #00994c;
+}
+
+.logout-btn {
+  background-color: #b30000;
+  color: white;
+  border: none;
+  width: 100%;
+  padding: 10px 0;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.3s;
+}
+.logout-btn:hover {
+  background-color: #e60000;
+}
+
+/* Right Panel */
+.right-panel {
+  background: #f8fafc;
+  color: #1e3a8a;
+  border-radius: 16px;
+  padding: 40px;
+  flex: 1;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.section-title {
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin-bottom: 30px;
+  color: #1e3a8a;
+}
+
+.subject-card {
+  background: #ffffff;
+  border: 2px solid #1e3a8a;
+  border-radius: 12px;
+  padding: 15px;
+  margin-bottom: 15px;
+  font-weight: 500;
+  text-align: center;
+  color: #1e3a8a;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+  transition: 0.3s;
+}
+.subject-card:hover {
+  background: #1e3a8a;
+  color: #fff;
+}
+
+.no-data {
+  color: #64748b;
+  text-align: center;
+  font-style: italic;
+}
+
+.loading {
+  color: #94a3b8;
+  text-align: center;
+}
+
+.initials-circle {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: #006633;
+  color: #ffd700;
+  font-size: 3rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+/* Default initials profile styling */
+#profileImage {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background-color: #1a5632;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 20px auto;
+  color: white;
+  font-size: 48px;
+  font-weight: bold;
+  text-transform: uppercase;
+  box-shadow: 0 0 8px rgba(0,0,0,0.3);
+}
+
+#profileImage .initials {
+  user-select: none;
+}
+
+/* ===========================
+   Edit Info & Change Password Forms
+   =========================== */
+
+.edit-info-form,
+.change-pass-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* two columns */
+  gap: 1rem 2rem;
+  background: #fff;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  max-width: 800px;
+  margin: 1rem auto;
+}
+
+.edit-info-form label,
+.change-pass-form label {
+  font-weight: 600;
+  color: var(--cvsu-dark-green);
+  margin-bottom: 0.3rem;
+}
+
+.edit-info-form input,
+.change-pass-form input {
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-family: 'Poppins', sans-serif;
+  transition: border 0.2s;
+}
+
+.edit-info-form input:focus,
+.change-pass-form input:focus {
+  border-color: var(--cvsu-green);
+  outline: none;
+}
+
+/* Single column layout for smaller screens */
+@media (max-width: 768px) {
+  .edit-info-form,
+  .change-pass-form {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Buttons */
+.form-buttons {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-start;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.save-btn {
+  background-color: var(--cvsu-green);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 1.4rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.save-btn:hover {
+  background-color: var(--cvsu-dark-green);
+}
+
+.cancel-btn {
+  background-color: #c0392b;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 1.4rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.cancel-btn:hover {
+  background-color: #a93226;
+}
+
+/* Title alignment */
+.section-title {
+  text-align: center;
+  color: var(--cvsu-dark-green);
+  margin-bottom: 1rem;
+}
+
+/* 🔒 Logout Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(3px);
+}
+
+.modal-box {
+  background: #fff;
+  border-radius: 12px;
+  padding: 25px 30px;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  max-width: 320px;
+  width: 90%;
+  animation: fadeIn 0.25s ease-in-out;
+}
+
+.modal-box h3 {
+  color: var(--text-dark);
+  font-size: 1.1rem;
+  margin-bottom: 20px;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.confirm-btn {
+  background: var(--cvsu-green);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.confirm-btn:hover {
+  background: var(--cvsu-dark-green);
+}
+
+.cancel-btn {
+  background: #ddd;
+  color: #333;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.cancel-btn:hover {
+  background: #ccc;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* ✅ Success & ❌ Error Modals */
+#successModal,
+#errorModal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: none; /* Hidden by default */
+  align-items: center;
+  justify-content: center;
+  z-index: 1100; /* Higher than logout modal */
+  backdrop-filter: blur(3px);
+}
+
+#successModal .modal-box,
+#errorModal .modal-box {
+  background: #fff;
+  border-radius: 12px;
+  padding: 25px 30px;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  max-width: 320px;
+  width: 90%;
+  animation: fadeIn 0.25s ease-in-out;
+}
+
+#successModal .modal-box h3,
+#errorModal .modal-box h3 {
+  margin-bottom: 10px;
+  font-size: 1.2rem;
+}
+
+#successModal .modal-box h3 {
+  color: var(--cvsu-green);
+}
+
+#errorModal .modal-box h3 {
+  color: crimson;
+}
+
+#successModal .modal-box p,
+#errorModal .modal-box p {
+  color: #333;
+  margin-bottom: 20px;
+  font-size: 0.95rem;
+}
+
+#successModal .modal-buttons,
+#errorModal .modal-buttons {
+  display: flex;
+  justify-content: center;
+}
+
+#successModal .confirm-btn,
+#errorModal .confirm-btn {
+  background: var(--cvsu-green);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+#successModal .confirm-btn:hover,
+#errorModal .confirm-btn:hover {
+  background: var(--cvsu-dark-green);
+}
+
+#successModal .modal-box {
+  border-top: 5px solid var(--cvsu-green);
+}
+
+#errorModal .modal-box {
+  border-top: 5px solid crimson;
+}
