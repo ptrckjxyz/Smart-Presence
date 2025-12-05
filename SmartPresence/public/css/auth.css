@@ -1,0 +1,199 @@
+/* Background */
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: "Poppins", sans-serif;
+}
+
+.background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url("../img/cvsucbg.png") no-repeat center center/cover;
+  filter: blur(6px) brightness(0.8);
+  z-index: -1;
+}
+
+/* ===== GLASS CONTAINER ===== */
+.glass-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  width: 80%;                /* smaller than before */
+  max-width: 800px;          /* limit max width */
+  margin: 0 auto;
+  padding: 20px;
+  border-radius: 25px;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.25);
+  color: white;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* ===== LOGO SECTION ===== */
+.logo-section {
+  text-align: center;
+  flex: 1;
+  min-width: 240px;
+}
+
+.logo-section img.logo {
+  width: 130px;
+  margin-bottom: 10px;
+}
+
+.logo-section h1 {
+  font-size: 28px;
+  margin: 0;
+}
+
+.logo-section .subtitle {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+/* ===== FORM SECTION ===== */
+.login-section {
+  flex: 1;
+  min-width: 270px;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 20px;
+  padding: 25px 20px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(15px);
+}
+
+.login-section h2 {
+  color: #fff;
+  text-align: center;
+  margin-bottom: 22px;
+  font-size: 24px;
+}
+
+/* ===== UNIFORM INPUTS & BUTTON ===== */
+.login-section input,
+.login-section select,
+.login-section button {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  box-sizing: border-box;
+}
+
+/* Inputs & Select Style */
+.login-section input,
+.login-section select {
+  background: rgba(255, 255, 255, 0.9);
+  outline: none;
+  color: #333;
+}
+
+/* Button Style */
+.login-section button {
+  background-color: #006633;
+  color: white;
+  cursor: pointer;
+  transition: 0.3s;
+  font-weight: 600;
+}
+
+.login-section button:hover {
+  background-color: #004d26;
+}
+
+.register-link {
+  text-align: center;
+  color: #fff;
+  margin-top: 10px;
+  font-size: 13px;
+}
+
+.register-link a {
+  color: #ffdd57;
+  text-decoration: none;
+}
+
+.register-link a:hover {
+  text-decoration: underline;
+}
+
+/* ======================
+   GLASS MODAL STYLING
+====================== */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed;
+  z-index: 9999;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(6px);
+  justify-content: center;
+  align-items: center;
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 16px;
+  padding: 30px 40px;
+  text-align: center;
+  color: #fff;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.25);
+  max-width: 320px;
+  width: 90%;
+  animation: slideUp 0.4s ease;
+}
+
+/* Success & Error Variations */
+.modal-content.success h2 {
+  color: #FFCC00; /* CvSU yellow */
+}
+
+.modal-content.error h2 {
+  color: #ff4d4d; /* Red for error */
+}
+
+/* Buttons */
+.modal-content button {
+  margin-top: 15px;
+  background: #006633;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.modal-content button:hover {
+  background: #004d26;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
