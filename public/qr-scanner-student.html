@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QR Scanner | CvSU Smart Presence</title>
+  <link rel="stylesheet" href="css/qr-scanner-student.css" />
+  <link rel="shortcut icon" href="img/favicon.png" type="image/x-icon" />
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <button class="back-btn" onclick="history.back()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="#006633" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+        <path d="M15 18l-6-6 6-6"/>
+      </svg>
+    </button>
+    <h2 class="page-title">QR Code Scanner</h2>
+  </div>
+
+  <!-- Main Container -->
+  <div class="scanner-container">
+    <!-- Class Info Card -->
+    <div class="class-info-card" id="classInfo">
+      <div class="class-header">
+        <h3 id="className">BSCS - 1A - DCIT21</h3>
+        <p class="schedule">Schedule: Monday 13:00-15:00</p>
+      </div>
+    </div>
+
+    <!-- Upload Section -->
+    <div class="upload-section">
+      <div class="upload-box" id="uploadBox">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="#006633" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <p>Click to upload or drag & drop</p>
+        <span>QR code image (JPG, PNG)</span>
+        <input type="file" id="fileInput" accept="image/*" style="display:none;">
+      </div>
+      
+      <div class="preview-container" id="previewContainer" style="display:none;">
+        <img id="previewImage" alt="QR Code Preview">
+        <div class="preview-controls">
+          <button id="scanUploadBtn" class="primary-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="3" y="3" width="8" height="8" stroke="currentColor" stroke-width="2"/>
+              <rect x="5" y="5" width="4" height="4" fill="currentColor"/>
+              <rect x="13" y="3" width="8" height="8" stroke="currentColor" stroke-width="2"/>
+              <rect x="15" y="5" width="4" height="4" fill="currentColor"/>
+              <rect x="3" y="13" width="8" height="8" stroke="currentColor" stroke-width="2"/>
+              <rect x="5" y="15" width="4" height="4" fill="currentColor"/>
+            </svg>
+            Scan QR Code
+          </button>
+          <button id="clearUploadBtn" class="secondary-btn">Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status Messages -->
+    <div class="status-message" id="statusMessage"></div>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" id="loadingOverlay" style="display:none;">
+    <div class="spinner"></div>
+    <p>Processing attendance...</p>
+  </div>
+
+  <!-- QR Code Scanner Library -->
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+  
+  <!-- Main Script -->
+  <script type="module" src="js/qr-scanner-student.js"></script>
+  <script type="module" src="js/navigation.js"></script>
+</body>
+</html>
