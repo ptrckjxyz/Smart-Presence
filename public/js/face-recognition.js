@@ -154,7 +154,10 @@ async function checkAuth() {
                 resolve(user);
             } else {
                 showStatus('error', 'You must be logged in');
-                setTimeout(() => window.location.href = 'login.html', 2000);
+                setTimeout(() => {
+                    if (typeof window.navigateWithFade === 'function') window.navigateWithFade('login.html');
+                    else window.location.href = 'login.html';
+                }, 2000);
                 reject(new Error('Not authenticated'));
             }
         });
@@ -741,7 +744,8 @@ function showSuccessResult(student, confidence) {
 
     if (userMode === 'student') {
         setTimeout(() => {
-            window.location.href = 'classes-student.html';
+            if (typeof window.navigateWithFade === 'function') window.navigateWithFade('classes-student.html');
+            else window.location.href = 'classes-student.html';
         }, 3000);
     }
 }
@@ -796,7 +800,8 @@ window.resetScan = function() {
         showStatus('info', 'Ready to scan next student');
         speakInstruction('Ready for next scan', true);
     } else {
-        window.location.href = 'classes-student.html';
+        if (typeof window.navigateWithFade === 'function') window.navigateWithFade('classes-student.html');
+        else window.location.href = 'classes-student.html';
     }
 };
 

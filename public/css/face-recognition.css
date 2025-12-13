@@ -40,6 +40,55 @@ body.face-error {
     padding: 20px;
 }
 
+/* If the global topbar is injected, avoid overlap on this page */
+.topbar + .container {
+    margin-top: 72px !important;
+}
+
+
+/* Ensure local header sits above background but below topbar */
+.header {
+    position: relative;
+    z-index: 2;
+}
+
+/* Defensive rules to prevent layout collapse */
+.container,
+.main-content,
+.camera-section {
+    display: block !important;
+}
+
+/* Ensure main area always has enough height so camera and results don't overlap */
+.main-content {
+    min-height: calc(100vh - 160px) !important;
+}
+
+/* Make camera-frame responsive and maintain aspect ratio */
+.camera-frame {
+    width: min(80vw, 560px) !important;
+    height: auto !important;
+    aspect-ratio: 1 / 1;
+    margin: 0 auto;
+    border-radius: 50% !important;
+}
+
+.camera-frame video,
+.camera-frame canvas {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+}
+
+/* Ensure loading overlay stacks above content without hiding layout */
+.loading-overlay {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+}
+
 /* Header */
 .header {
     background: white;

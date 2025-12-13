@@ -18,6 +18,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 // =============================
 async function loadHeader() {
   try {
+    // Skip injecting the global header on pages that manage their own UI
+    const currentPage = window.location.pathname.split('/').pop();
+    const pagesToSkipHeader = [
+      'face-recognition.html',
+      'qr-attendance.html',
+      'qr-scanner-student.html',
+      'scan-attendance.html'
+    ];
+    if (pagesToSkipHeader.includes(currentPage)) return;
     // Remove existing topbar header ONLY (not card headers)
     const existingHeader = document.querySelector("header.topbar");
     if (existingHeader) {
@@ -119,6 +128,8 @@ else {
     }
 
     navLinks.innerHTML = linksHTML;
+    // Attach click handlers immediately to avoid missing clicks
+    attachNavigationEvents(document.querySelectorAll('.nav-btn'));
   } catch (err) {
     console.error("Error loading header:", err);
   }
@@ -147,6 +158,7 @@ function initNavigation() {
 // =============================
 function attachNavigationEvents(navBtns) {
   navBtns.forEach((btn) => {
+    if (btn.dataset.navAttached === 'true') return;
     const href = btn.getAttribute("href");
     if (!href) return; // ✅ Skip logout button
 
@@ -175,6 +187,7 @@ function attachNavigationEvents(navBtns) {
 
       navigateWithFade(target);
     });
+    btn.dataset.navAttached = 'true';
   });
 }
 
@@ -236,4 +249,30 @@ function highlightActiveNav() {
     }
   });
 }
+
+// =============================
+// 🔁 Global Delegated Nav Click Handler (fallback)
+// Ensures fade transitions work even if individual listeners weren't attached yet
+// =============================
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('.nav-btn');
+  if (!btn) return;
+  const href = btn.getAttribute('href');
+  if (!href) return; // skip non-links
+  e.preventDefault();
+
+  const target = href;
+  if (target.includes('dashboard') || target.includes('profile.html')) {
+    navigateWithFade(target);
+    return;
+  }
+
+  const verified = sessionStorage.getItem('verified') === 'true';
+  console.log('Delegated nav click - target:', target, 'verified:', verified);
+  if (!verified) {
+    showVerifyModal();
+    return;
+  }
+  navigateWithFade(target);
+}, true);
 

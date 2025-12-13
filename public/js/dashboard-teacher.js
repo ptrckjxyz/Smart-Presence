@@ -223,13 +223,197 @@ function updateDashboardUI(students, subjects, schedules, present, absent, late,
   // Update recent logs
   updateLogsTable(logs);
   
+  // Update analytics
+  updateAnalyticsChart(logs);
+  updateAnalyticsSummary(logs);
+  
   console.log("📊 Dashboard Updated - Students:", students, "Subjects:", subjects, "Schedules:", schedules);
   console.log("📊 Attendance - Present:", present, "Absent:", absent, "Late:", late);
 }
 
 // ==============================
-// 🕒 Update Logs Table
+// 📊 Update Analytics Chart
 // ==============================
+function updateAnalyticsChart(logsArray) {
+  const chartCanvas = document.getElementById("attendanceChart");
+  if (!chartCanvas) return;
+
+  // Group logs by date and count attendance status
+  const dateData = {};
+  logsArray.forEach(log => {
+    if (!dateData[log.date]) {
+      dateData[log.date] = { present: 0, absent: 0, late: 0 };
+    }
+    dateData[log.date].present += log.present || 0;
+    dateData[log.date].absent += log.absent || 0;
+    dateData[log.date].late += log.late || 0;
+  });
+
+  // Sort dates and take last 7 days
+  const sortedDates = Object.keys(dateData).sort().slice(-7);
+  const presentData = sortedDates.map(date => dateData[date].present);
+  const absentData = sortedDates.map(date => dateData[date].absent);
+  const lateData = sortedDates.map(date => dateData[date].late);
+
+  // Destroy existing chart if it exists
+  if (window.attendanceChartInstance) {
+    window.attendanceChartInstance.destroy();
+  }
+
+  // Create new chart
+  window.attendanceChartInstance = new Chart(chartCanvas, {
+    type: 'line',
+    data: {
+      labels: sortedDates.length > 0 ? sortedDates : ['No Data'],
+      datasets: [
+        {
+          label: 'Present',
+          data: presentData,
+          borderColor: '#059669',
+          backgroundColor: 'rgba(5, 150, 105, 0.1)',
+          tension: 0.4,
+          fill: true,
+          pointRadius: 5,
+          pointBackgroundColor: '#059669',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2
+        },
+        {
+          label: 'Absent',
+          data: absentData,
+          borderColor: '#dc2626',
+          backgroundColor: 'rgba(220, 38, 38, 0.1)',
+          tension: 0.4,
+          fill: true,
+          pointRadius: 5,
+          pointBackgroundColor: '#dc2626',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2
+        },
+        {
+          label: 'Late',
+          data: lateData,
+          borderColor: '#d97706',
+          backgroundColor: 'rgba(217, 119, 6, 0.1)',
+          tension: 0.4,
+          fill: true,
+          pointRadius: 5,
+          pointBackgroundColor: '#d97706',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: {
+          display: true,
+          position: 'top',
+          labels: {
+            font: { size: 12, weight: '600' },
+            color: '#1f2937',
+            padding: 15
+          }
+        },
+        tooltip: {
+          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          titleColor: '#fff',
+          bodyColor: '#fff',
+          borderColor: '#ddd',
+          borderWidth: 1,
+          titleFont: { weight: 'bold' },
+          padding: 10,
+          displayColors: true
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid: { color: '#e5e7eb' },
+          ticks: { color: '#6b7280', font: { size: 11 } }
+        },
+        x: {
+          grid: { display: false },
+          ticks: { color: '#6b7280', font: { size: 11 } }
+        }
+      }
+    }
+  });
+}
+
+// ==============================
+// 📈 Update Analytics Summary
+// ==============================
+function updateAnalyticsSummary(logsArray) {
+  if (logsArray.length === 0) {
+    document.getElementById("weeklyAverage").textContent = "—";
+    document.getElementById("activeClass").textContent = "—";
+    document.getElementById("leastClass").textContent = "—";
+    document.getElementById("perfectStudents").textContent = "—";
+    return;
+  }
+
+  // Calculate weekly average
+  const totalRecords = logsArray.length;
+  const totalPresent = logsArray.reduce((sum, log) => sum + (log.present || 0), 0);
+  const weeklyAverage = totalRecords > 0 ? Math.round((totalPresent / totalRecords) * 100) : 0;
+
+  // Group by class name
+  const classData = {};
+  logsArray.forEach(log => {
+    if (!classData[log.className]) {
+      classData[log.className] = { present: 0, absent: 0, late: 0, total: 0 };
+    }
+    classData[log.className].present += log.present || 0;
+    classData[log.className].absent += log.absent || 0;
+    classData[log.className].late += log.late || 0;
+    classData[log.className].total += (log.present || 0) + (log.absent || 0) + (log.late || 0);
+  });
+
+  // Find most active and least active classes
+  let mostActiveClass = "—";
+  let leastActiveClass = "—";
+  let maxPresent = -1;
+  let minPresent = Infinity;
+
+  Object.entries(classData).forEach(([className, data]) => {
+    if (data.present > maxPresent) {
+      maxPresent = data.present;
+      mostActiveClass = className;
+    }
+    if (data.present < minPresent && data.total > 0) {
+      minPresent = data.present;
+      leastActiveClass = className;
+    }
+  });
+
+  // Count students with perfect attendance (never absent or late)
+  let perfectCount = 0;
+  const studentAttendance = {};
+  logsArray.forEach(log => {
+    if (!studentAttendance[log.className]) {
+      studentAttendance[log.className] = { absent: 0, late: 0 };
+    }
+    studentAttendance[log.className].absent += log.absent || 0;
+    studentAttendance[log.className].late += log.late || 0;
+  });
+
+  Object.values(studentAttendance).forEach(attendance => {
+    if (attendance.absent === 0 && attendance.late === 0) {
+      perfectCount++;
+    }
+  });
+
+  // Update DOM
+  document.getElementById("weeklyAverage").textContent = weeklyAverage + "%";
+  document.getElementById("activeClass").textContent = mostActiveClass !== "—" ? mostActiveClass : "No data";
+  document.getElementById("leastClass").textContent = leastActiveClass !== "—" ? leastActiveClass : "No data";
+  document.getElementById("perfectStudents").textContent = Object.keys(studentAttendance).length > 0 ? Object.keys(studentAttendance).length : "—";
+}
+
+
 function updateLogsTable(logsArray) {
   const logsTableBody = document.getElementById("logsTableBody");
   
