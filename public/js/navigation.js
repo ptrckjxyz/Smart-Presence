@@ -199,12 +199,28 @@ function navigateWithFade(target) {
   
   // Add fade-out class
   body.classList.add("page-transitioning");
-  
-  // Wait for fade-out animation to complete (40ms)
+  // Wait for CSS transition duration (read from computed style)
+  let timeoutMs = 40;
+  try {
+    const computed = window.getComputedStyle(body).transitionDuration || '0.04s';
+    // transitionDuration may contain comma-separated values
+    const durations = computed.split(',').map(s => s.trim()).map(s => {
+      if (s.endsWith('ms')) return parseFloat(s);
+      if (s.endsWith('s')) return parseFloat(s) * 1000;
+      return parseFloat(s) * 1000;
+    });
+    timeoutMs = Math.max(...durations, 40);
+  } catch (err) {
+    console.warn('Unable to compute transition duration, using default', err);
+  }
+
   setTimeout(() => {
     window.location.href = target;
-  }, 40);
+  }, timeoutMs);
 }
+
+// Expose for inline handlers and legacy code
+try { window.navigateWithFade = navigateWithFade; } catch (e) { /* ignore */ }
 
 // =============================
 // 💬 Verification Modal
