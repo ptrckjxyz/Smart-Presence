@@ -29,21 +29,24 @@
         </article>
       </div>
 
-      <section class="analytics-section">
-        <h2>📊 Attendance Analytics</h2>
-        <div class="analytics-grid">
+      <div class="analytics-container">
+        <section class="analytics-section">
+          <h2>📊 Attendance Analytics</h2>
           <div class="analytics-card">
             <canvas id="attendanceChart"></canvas>
           </div>
+        </section>
+
+        <section class="analytics-section">
+          <h2>📈 Attendance Overview</h2>
           <div class="analytics-summary">
-            <h3>Attendance Overview</h3>
             <p><strong>Weekly Average:</strong> <span class="highlight" id="weeklyAverage">—</span></p>
             <p><strong>Most Active Class:</strong> <span id="activeClass">—</span></p>
             <p><strong>Least Attendance:</strong> <span id="leastClass">—</span></p>
             <p><strong>Perfect Attendance:</strong> <span id="perfectStudents">—</span></p>
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
 
       <section class="logs-section">
         <h2>🕒 Recent Attendance Logs</h2>
