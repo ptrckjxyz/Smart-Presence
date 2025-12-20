@@ -3,10 +3,26 @@
 // Works for Teacher, Student, Admin dashboards
 // ======================================
 
+// Expose a helper early so page scripts can signal when dynamic content is ready
+if (!window.markContentReady) {
+  window.markContentReady = function () {
+    try { window.dispatchEvent(new Event('content-ready')); } catch (e) { /* ignore */ }
+  };
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
   await loadHeader(); 
+  // Ensure consistent fade timing across all pages by setting an inline transition
+  // This overrides per-page stylesheet rules and matches the dashboard timing
+  try {
+    document.documentElement.style.transition = 'opacity 0.04s ease-in-out';
+    document.body.style.transition = 'opacity 0.04s ease-in-out';
+  } catch (e) { /* ignore */ }
+
   // Wait a tiny bit to ensure nav buttons are in DOM before attaching
   setTimeout(() => {
+    // Animate page content entry to mirror dashboard (longer fade while content loads)
+    performPageEnterAnimation();
     initNavigation();
     highlightActiveNav();
   }, 200);
@@ -138,6 +154,69 @@ else {
 // =============================
 // 🧭 Main Navigation Function
 // =============================
+
+// Animate page entry with a longer fade (mirrors dashboard where content loads during fade)
+function performPageEnterAnimation() {
+  const pages = document.querySelectorAll('.page');
+  pages.forEach((page) => {
+    if (!page.classList.contains('visible')) return; // only animate pages meant to be visible
+
+    // Start hidden but take layout space
+    page.classList.remove('visible');
+    page.classList.add('entering');
+
+    // Trigger the opacity transition on the next frame
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        page.classList.add('entering-active');
+      });
+    });
+
+    // The visual duration we want to preserve (matches CSS 0.65s)
+    const visualDuration = 650;
+    // Maximum wait to avoid locking UI if load never fires
+    const maxWait = 1200;
+
+    let finished = false;
+
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      page.classList.remove('entering', 'entering-active');
+      page.classList.add('visible');
+      // cleanup listeners
+      window.removeEventListener('load', onLoad);
+      window.removeEventListener('content-ready', onContentReady);
+      clearTimeout(timeoutId);
+    };
+
+    const onLoad = () => {
+      // ensure we keep the visual for at least a short moment so transition is perceivable
+      setTimeout(finish, Math.max(0, visualDuration - 100));
+    };
+
+    const onContentReady = () => {
+      // content-ready means page script finished populating dynamic content
+      setTimeout(finish, Math.max(0, visualDuration - 100));
+    };
+
+    window.addEventListener('load', onLoad, { once: true });
+    window.addEventListener('content-ready', onContentReady, { once: true });
+
+    // Fallback timeout in case neither event fires
+    const timeoutId = setTimeout(() => {
+      finish();
+    }, maxWait);
+  });
+
+  // Helper for pages to signal when they've finished loading dynamic content
+  if (!window.markContentReady) {
+    window.markContentReady = function() {
+      window.dispatchEvent(new Event('content-ready'));
+    };
+  }
+}
+
 function initNavigation() {
   const verified = sessionStorage.getItem("verified") === "true";
 
@@ -199,7 +278,7 @@ function navigateWithFade(target) {
   
   // Add fade-out class
   body.classList.add("page-transitioning");
-  // Wait for CSS transition duration (read from computed style)
+  // Wait for CSS transition duration (read from computed style). Fallback to dashboard timing (40ms)
   let timeoutMs = 40;
   try {
     const computed = window.getComputedStyle(body).transitionDuration || '0.04s';
@@ -223,7 +302,7 @@ function navigateWithFade(target) {
 try { window.navigateWithFade = navigateWithFade; } catch (e) { /* ignore */ }
 
 // =============================
-// 💬 Verification Modal
+//  Verification Modal
 // =============================
 function showVerifyModal() {
   if (document.querySelector("#verifyModal")) {

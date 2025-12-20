@@ -236,4 +236,5 @@ function displayAttendanceLogs(records) {
 }
 
 // Load stats when the page loads
+
 loadStudentStats();

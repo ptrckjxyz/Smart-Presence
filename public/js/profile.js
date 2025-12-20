@@ -523,6 +523,8 @@ function loadUserSubjects(userId) {
       
       subjectsContainer.appendChild(classCard);
     });
+    // Signal that subjects/content are rendered so entering animation can finish
+    if (window.markContentReady) window.markContentReady();
   });
 }
 

@@ -97,7 +97,7 @@ onAuthStateChanged(auth, (user) => {
       }
     }
     // No active session, redirect to login
-    window.location.href = "login.html";
+    window.location.href = "index.html";
   }
 });
 
@@ -161,11 +161,11 @@ function regenerateQRCode(sessionData) {
   // Create the appropriate URL based on attendance mode
   let studentUrl;
   if (sessionData.attendanceMode === "faceRecognition") {
-    studentUrl = `${window.location.origin}/face-recognition-scan.html?data=${encodeURIComponent(JSON.stringify(qrData))}`;
+    studentUrl = `https://${window.location.host}/face-recognition-scan.html?data=${encodeURIComponent(JSON.stringify(qrData))}`;
     qrModeBadge.textContent = "Face Recognition Mode";
     qrModeBadge.style.background = "linear-gradient(135deg, #667eea 0%, #764ba2 100%)";
   } else {
-    studentUrl = `${window.location.origin}/scan-attendance.html?data=${encodeURIComponent(JSON.stringify(qrData))}`;
+    studentUrl = `https://${window.location.host}/scan-attendance.html?data=${encodeURIComponent(JSON.stringify(qrData))}`;
     qrModeBadge.textContent = "Automatic Mode";
     qrModeBadge.style.background = "linear-gradient(135deg, #0f4c3a 0%, #1a5c47 100%)";
   }
@@ -180,10 +180,12 @@ function regenerateQRCode(sessionData) {
     }
   }, (error) => {
     if (error) {
-      console.error("QR Code generation error:", error);
+      console.error("❌ QR Code generation error:", error);
       showToast("Error generating QR code");
       return;
     }
+    
+    console.log("✅ QR Code regenerated successfully");
     
     // ✅ QR Code generated successfully - NOW enable buttons
     qrCodeSection.classList.remove("hidden");
@@ -276,19 +278,21 @@ generateQRBtn.addEventListener("click", async () => {
     type: "attendance"
   };
   
-  // Create the appropriate URL based on attendance mode
+  // Create the appropriate URL based on attendance mode - USE HTTPS
   let studentUrl;
   if (attendanceMode === "faceRecognition") {
     // Redirect to face recognition page
-    studentUrl = `${window.location.origin}/face-recognition-scan.html?data=${encodeURIComponent(JSON.stringify(qrData))}`;
+    studentUrl = `https://${window.location.host}/face-recognition-scan.html?data=${encodeURIComponent(JSON.stringify(qrData))}`;
     qrModeBadge.textContent = "Face Recognition Mode";
     qrModeBadge.style.background = "linear-gradient(135deg, #667eea 0%, #764ba2 100%)";
   } else {
     // Direct automatic attendance
-    studentUrl = `${window.location.origin}/scan-attendance.html?data=${encodeURIComponent(JSON.stringify(qrData))}`;
+    studentUrl = `https://${window.location.host}/scan-attendance.html?data=${encodeURIComponent(JSON.stringify(qrData))}`;
     qrModeBadge.textContent = "Automatic Mode";
     qrModeBadge.style.background = "linear-gradient(135deg, #0f4c3a 0%, #1a5c47 100%)";
   }
+  
+  console.log("🔗 Generated QR URL:", studentUrl);
   
   // Generate QR Code using imported module
   QRCode.toCanvas(qrCodeCanvas, studentUrl, {
@@ -300,10 +304,12 @@ generateQRBtn.addEventListener("click", async () => {
     }
   }, (error) => {
     if (error) {
-      console.error("QR Code generation error:", error);
+      console.error("❌ QR Code generation error:", error);
       showToast("Error generating QR code");
       return;
     }
+    
+    console.log("✅ QR Code generated successfully");
     
     // ✅ QR Code generated successfully - NOW enable buttons
     qrCodeSection.classList.remove("hidden");
@@ -653,8 +659,6 @@ async function endSession() {
 }
 
 // Finalize attendance - mark absent students and save all records
-// Replace the finalizeAttendance() function in qr-attendance.js with this:
-
 async function finalizeAttendance() {
   try {
     const sessionData = JSON.parse(localStorage.getItem('activeSession') || '{}');
@@ -714,7 +718,7 @@ async function finalizeAttendance() {
     console.log('✅ Attendance finalized and saved to daily records');
     
   } catch (error) {
-    console.error("Error finalizing attendance:", error);
+    console.error("❌ Error finalizing attendance:", error);
     showToast("Error saving attendance records");
   }
 }

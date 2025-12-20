@@ -21,31 +21,37 @@ let currentUser = null;
 
 // Check jsQR library
 if (!window.jsQR) {
-  console.error('jsQR library not found!');
+  console.error('❌ jsQR library not found!');
   setTimeout(() => {
     alert('QR Scanner library not loaded. Please refresh the page.');
   }, 1000);
+} else {
+  console.log('✅ jsQR library loaded successfully');
 }
 
 // Authentication check
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
-    window.location.href = 'login.html';
+    console.log('❌ No user authenticated, redirecting to login');
+    window.location.href = 'index.html';
     return;
   }
   
   currentUser = user;
+  console.log('✅ User authenticated:', currentUser.uid);
   
   const teacherId = urlParams.get('teacherId');
   const dept = urlParams.get('dept');
   const classId = urlParams.get('classId');
   
   if (teacherId && dept && classId) {
+    console.log('📚 Loading class info:', { teacherId, dept, classId });
     await loadClassInfo(teacherId, dept, classId);
   }
   
   // Process QR data if passed in URL
   if (qrDataParam) {
+    console.log('🔍 QR data found in URL, processing...');
     await processQRCode(qrDataParam);
   }
 });
@@ -59,11 +65,13 @@ async function loadClassInfo(teacherId, dept, classId) {
     if (snapshot.exists()) {
       const classData = snapshot.val();
       classNameEl.textContent = `${classData.sectionName} - ${classData.subjectName}`;
+      console.log('✅ Class info loaded:', classData.sectionName);
     } else {
       classNameEl.textContent = 'Class not found';
+      console.error('❌ Class not found in database');
     }
   } catch (error) {
-    console.error('Error loading class info:', error);
+    console.error('❌ Error loading class info:', error);
     showStatus('Error loading class information', 'error');
   }
 }
@@ -72,7 +80,10 @@ async function loadClassInfo(teacherId, dept, classId) {
    UPLOAD FUNCTIONALITY
 ======================================== */
 
-uploadBox.addEventListener('click', () => fileInput.click());
+uploadBox.addEventListener('click', () => {
+  console.log('📷 Upload box clicked');
+  fileInput.click();
+});
 
 uploadBox.addEventListener('dragover', (e) => {
   e.preventDefault();
@@ -89,13 +100,18 @@ uploadBox.addEventListener('drop', (e) => {
   
   const file = e.dataTransfer.files[0];
   if (file && file.type.startsWith('image/')) {
+    console.log('📷 Image dropped:', file.name);
     handleFileUpload(file);
+  } else {
+    console.error('❌ Invalid file type dropped');
+    showStatus('Please drop an image file', 'error');
   }
 });
 
 fileInput.addEventListener('change', (e) => {
   const file = e.target.files[0];
   if (file) {
+    console.log('📷 Image selected:', file.name);
     handleFileUpload(file);
   }
 });
@@ -107,6 +123,12 @@ function handleFileUpload(file) {
     previewImage.src = e.target.result;
     uploadBox.style.display = 'none';
     previewContainer.style.display = 'block';
+    console.log('✅ Image preview loaded');
+  };
+  
+  reader.onerror = (error) => {
+    console.error('❌ Error reading file:', error);
+    showStatus('Error loading image', 'error');
   };
   
   reader.readAsDataURL(file);
@@ -118,6 +140,7 @@ scanUploadBtn.addEventListener('click', async () => {
     return;
   }
   
+  console.log('🔍 Starting QR code scan from image...');
   showLoading();
   
   try {
@@ -128,6 +151,8 @@ scanUploadBtn.addEventListener('click', async () => {
       img.onload = resolve;
       img.onerror = reject;
     });
+    
+    console.log('✅ Image loaded for scanning:', img.width, 'x', img.height);
     
     // Create canvas with improved sizing
     const canvas = document.createElement('canvas');
@@ -143,6 +168,7 @@ scanUploadBtn.addEventListener('click', async () => {
         width = (width / height) * maxSize;
         height = maxSize;
       }
+      console.log('📐 Image resized to:', width, 'x', height);
     }
     
     canvas.width = width;
@@ -154,7 +180,7 @@ scanUploadBtn.addEventListener('click', async () => {
     let code = null;
     
     // Strategy 1: Normal scan
-    console.log('Attempt 1: Normal scan...');
+    console.log('🔍 Attempt 1: Normal scan...');
     let imageData = context.getImageData(0, 0, canvas.width, canvas.height);
     code = window.jsQR(imageData.data, imageData.width, imageData.height, {
       inversionAttempts: "attemptBoth",
@@ -162,7 +188,7 @@ scanUploadBtn.addEventListener('click', async () => {
     
     // Strategy 2: Enhanced contrast
     if (!code) {
-      console.log('Attempt 2: Enhanced contrast...');
+      console.log('🔍 Attempt 2: Enhanced contrast...');
       const enhanced = enhanceContrast(imageData);
       code = window.jsQR(enhanced.data, enhanced.width, enhanced.height, {
         inversionAttempts: "attemptBoth",
@@ -171,7 +197,7 @@ scanUploadBtn.addEventListener('click', async () => {
     
     // Strategy 3: Different scaling
     if (!code) {
-      console.log('Attempt 3: Trying different scale...');
+      console.log('🔍 Attempt 3: Trying different scale...');
       const scaledCanvas = document.createElement('canvas');
       scaledCanvas.width = width * 1.5;
       scaledCanvas.height = height * 1.5;
@@ -180,6 +206,21 @@ scanUploadBtn.addEventListener('click', async () => {
       
       const scaledData = scaledCtx.getImageData(0, 0, scaledCanvas.width, scaledCanvas.height);
       code = window.jsQR(scaledData.data, scaledData.width, scaledData.height, {
+        inversionAttempts: "attemptBoth",
+      });
+    }
+    
+    // Strategy 4: Try smaller scale
+    if (!code) {
+      console.log('🔍 Attempt 4: Trying smaller scale...');
+      const smallCanvas = document.createElement('canvas');
+      smallCanvas.width = width * 0.7;
+      smallCanvas.height = height * 0.7;
+      const smallCtx = smallCanvas.getContext('2d');
+      smallCtx.drawImage(img, 0, 0, smallCanvas.width, smallCanvas.height);
+      
+      const smallData = smallCtx.getImageData(0, 0, smallCanvas.width, smallCanvas.height);
+      code = window.jsQR(smallData.data, smallData.width, smallData.height, {
         inversionAttempts: "attemptBoth",
       });
     }
@@ -195,7 +236,7 @@ scanUploadBtn.addEventListener('click', async () => {
     }
   } catch (error) {
     hideLoading();
-    console.error('Error scanning image:', error);
+    console.error('❌ Error scanning image:', error);
     showStatus('Error scanning QR code: ' + error.message, 'error');
   }
 });
@@ -222,6 +263,7 @@ function enhanceContrast(imageData) {
 }
 
 clearUploadBtn.addEventListener('click', () => {
+  console.log('🗑️ Clearing uploaded image');
   previewImage.src = '';
   fileInput.value = '';
   uploadBox.style.display = 'block';
@@ -255,7 +297,7 @@ async function processQRCode(qrDataString) {
         console.log('✅ Parsed QR data from URL:', qrData);
         
       } catch (urlError) {
-        console.error('URL parsing error:', urlError);
+        console.error('❌ URL parsing error:', urlError);
         throw new Error('Invalid QR code URL format');
       }
       
@@ -264,7 +306,7 @@ async function processQRCode(qrDataString) {
         qrData = JSON.parse(qrDataString);
         console.log('✅ Parsed QR data as JSON:', qrData);
       } catch (jsonError) {
-        console.error('JSON parsing error:', jsonError);
+        console.error('❌ JSON parsing error:', jsonError);
         throw new Error('Invalid QR code format');
       }
     }
@@ -278,6 +320,8 @@ async function processQRCode(qrDataString) {
     if (qrData.type !== 'attendance') {
       throw new Error('This is not an attendance QR code');
     }
+    
+    console.log('✅ QR code validated:', qrData);
     
     // 🔥 CHECK IF FACE RECOGNITION QR - REDIRECT IMMEDIATELY
     if (qrData.mode === 'faceRecognition') {
@@ -308,6 +352,8 @@ async function processQRCode(qrDataString) {
 async function markAutomaticAttendance(qrData) {
   const { teacherId, classId, department, sessionId } = qrData;
   
+  console.log('📚 Loading class and session data...');
+  
   // Load class info
   await loadClassInfo(teacherId, department, classId);
   
@@ -316,22 +362,27 @@ async function markAutomaticAttendance(qrData) {
   const studentSnap = await get(studentRef);
   
   if (!studentSnap.exists()) {
+    console.error('❌ Student not enrolled in class');
     throw new Error('You are not enrolled in this class');
   }
   
   const studentData = studentSnap.val();
+  console.log('✅ Student enrolled:', studentData.name || studentData.studentNumber);
   
   // Check session validity
   const sessionRef = ref(db, `attendance_sessions/${teacherId}/${department}/${classId}/${sessionId}`);
   const sessionSnap = await get(sessionRef);
   
   if (!sessionSnap.exists()) {
+    console.error('❌ Session not found');
     throw new Error('Attendance session not found');
   }
   
   const sessionData = sessionSnap.val();
+  console.log('✅ Session found:', sessionData);
   
   if (!sessionData.active) {
+    console.error('❌ Session is not active');
     throw new Error('This attendance session has ended');
   }
   
@@ -344,12 +395,23 @@ async function markAutomaticAttendance(qrData) {
   const totalTimeMs = (timeLimit + graceTime) * 60 * 1000;
   const elapsed = now - sessionStart;
   
+  console.log('⏰ Time calculation:', {
+    now,
+    sessionStart,
+    elapsed,
+    elapsedMinutes: (elapsed / 60000).toFixed(2),
+    timeLimit,
+    graceTime
+  });
+  
   if (elapsed > totalTimeMs) {
     const minutesElapsed = Math.floor(elapsed / 60000);
+    console.error('❌ Attendance window closed');
     throw new Error(`Attendance window closed. Session started ${minutesElapsed} minutes ago.`);
   }
   
   const status = elapsed <= timeLimitMs ? 'present' : 'late';
+  console.log('📊 Attendance status:', status);
   
   // Check if already marked
   const attendeeRef = ref(db, 
@@ -358,19 +420,24 @@ async function markAutomaticAttendance(qrData) {
   const attendeeSnap = await get(attendeeRef);
   
   if (attendeeSnap.exists()) {
+    console.log('ℹ️ Already marked attendance');
     throw new Error('You have already marked your attendance for this session');
   }
   
   // Mark attendance
-  await set(attendeeRef, {
+  const attendanceData = {
     name: studentData.name || 'Unknown Student',
     studentNumber: studentData.studentNumber || currentUser.uid,
     scanTime: now,
     status: status,
     faceVerified: false,
     method: 'qr_scan'
-  });
+  };
   
+  console.log('💾 Saving attendance:', attendanceData);
+  await set(attendeeRef, attendanceData);
+  
+  console.log('✅ Attendance marked successfully!');
   hideLoading();
   
   if (status === 'present') {
@@ -380,6 +447,7 @@ async function markAutomaticAttendance(qrData) {
   }
   
   // Redirect after 2 seconds
+  console.log('🔄 Redirecting to classes page...');
   setTimeout(() => {
     window.location.href = 'classes-student.html';
   }, 2000);
@@ -392,6 +460,7 @@ async function markAutomaticAttendance(qrData) {
 function showStatus(message, type) {
   statusMessage.textContent = message;
   statusMessage.className = `status-message ${type} show`;
+  console.log(`📢 Status: [${type}] ${message}`);
 }
 
 function hideStatus() {
@@ -400,8 +469,10 @@ function hideStatus() {
 
 function showLoading() {
   loadingOverlay.style.display = 'flex';
+  console.log('⏳ Loading overlay shown');
 }
 
 function hideLoading() {
   loadingOverlay.style.display = 'none';
+  console.log('✅ Loading overlay hidden');
 }

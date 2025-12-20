@@ -154,10 +154,7 @@ async function checkAuth() {
                 resolve(user);
             } else {
                 showStatus('error', 'You must be logged in');
-                setTimeout(() => {
-                    if (typeof window.navigateWithFade === 'function') window.navigateWithFade('login.html');
-                    else window.location.href = 'login.html';
-                }, 2000);
+                setTimeout(() => window.location.href = 'index.html', 2000);
                 reject(new Error('Not authenticated'));
             }
         });
@@ -563,13 +560,12 @@ async function performFaceRecognition(detection) {
             );
         });
 
-        // FIXED: Use more lenient threshold (0.80 for testing, adjust as needed)
         // Normal range: 0.50-0.60 for good matches, 0.70-0.80 for lenient
-        const faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.80);
+        const faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.65);
         const match = faceMatcher.findBestMatch(descriptor);
 
         debug(`🎯 Match result: ${match.label}`);
-        debug(`   Distance: ${match.distance.toFixed(3)} (threshold: 0.80)`);
+        debug(`   Distance: ${match.distance.toFixed(3)} (threshold: 0.65)`);
         debug(`   Confidence: ${((1 - match.distance) * 100).toFixed(1)}%`);
         
         // Show all student distances for debugging
@@ -598,12 +594,23 @@ async function performFaceRecognition(detection) {
                 return;
             }
             
-            setBackgroundState('face-verified');
-            setCameraFrameState('verified');
-            speakInstruction(`Face verified. Welcome ${student.name.split(' ')[0]}.`, true);
-            
-            await recordAttendance(student, confidence);
-            showSuccessResult(student, confidence);
+            try {
+                await recordAttendance(student, confidence);
+                setBackgroundState('face-verified');
+                setCameraFrameState('verified');
+                speakInstruction(`Face verified. Welcome ${student.name.split(' ')[0]}.`, true);
+                showSuccessResult(student, confidence);
+            } catch (attendanceError) {
+                if (attendanceError.message.includes('already recorded')) {
+                    // Show friendly reminder instead of error
+                    setBackgroundState('face-verified');
+                    setCameraFrameState('verified');
+                    speakInstruction(`Welcome back ${student.name.split(' ')[0]}. Your attendance is already recorded today.`, true);
+                    showAlreadyRecordedResult(student);
+                } else {
+                    throw attendanceError;
+                }
+            }
         } else {
             debug('❌ NO MATCH - Face not recognized');
             setBackgroundState('face-error');
@@ -744,8 +751,31 @@ function showSuccessResult(student, confidence) {
 
     if (userMode === 'student') {
         setTimeout(() => {
-            if (typeof window.navigateWithFade === 'function') window.navigateWithFade('classes-student.html');
-            else window.location.href = 'classes-student.html';
+            window.location.href = 'classes-student.html';
+        }, 3000);
+    }
+}
+
+function showAlreadyRecordedResult(student) {
+    cameraSection.style.display = 'none';
+    resultsSection.style.display = 'block';
+    successCard.style.display = 'block';
+    errorCard.style.display = 'none';
+
+    document.getElementById('studentInfo').innerHTML = `
+        <p><strong>✅ Already Checked In!</strong></p>
+        <p><strong>Name:</strong> <span>${student.name}</span></p>
+        <p><strong>Student Number:</strong> <span>${student.studentNumber}</span></p>
+        <p style="margin-top: 15px; color: #00d084; font-size: 14px;">📋 Your attendance has already been recorded for today. Have a great class!</p>
+    `;
+
+    document.getElementById('matchConfidence').innerHTML = `
+        <p style="color: #666; font-size: 13px;">No need to scan again - you're all set! 👍</p>
+    `;
+
+    if (userMode === 'student') {
+        setTimeout(() => {
+            window.location.href = 'classes-student.html';
         }, 3000);
     }
 }
@@ -800,8 +830,7 @@ window.resetScan = function() {
         showStatus('info', 'Ready to scan next student');
         speakInstruction('Ready for next scan', true);
     } else {
-        if (typeof window.navigateWithFade === 'function') window.navigateWithFade('classes-student.html');
-        else window.location.href = 'classes-student.html';
+        window.location.href = 'classes-student.html';
     }
 };
 

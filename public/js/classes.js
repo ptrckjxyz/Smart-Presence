@@ -78,6 +78,275 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
+// Show excuse letters modal for teacher
+async function showExcuseLettersModal() {
+  let modal = document.getElementById("excuseLettersModal");
+
+  if (!modal) {
+    modal = document.createElement("div");
+    modal.id = "excuseLettersModal";
+    modal.classList.add("modal-overlay");
+    modal.innerHTML = `
+      <div class="modal-box excuse-letters-modal" style="max-width: 800px; max-height: 80vh; overflow-y: auto;">
+        <h4>Excuse Letters</h4>
+        <div class="excuse-filters" style="display: flex; gap: 10px; margin-bottom: 20px;">
+          <button class="filter-excuse-btn active" data-status="pending_teacher">Pending</button>
+          <button class="filter-excuse-btn" data-status="approved">Approved</button>
+          <button class="filter-excuse-btn" data-status="rejected">Rejected</button>
+          <button class="filter-excuse-btn" data-status="all">All</button>
+        </div>
+        <div id="excuseLettersList"></div>
+        <div class="modal-actions">
+          <button id="closeExcuseLetters" class="cancel-btn">Close</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) hideModal(modal);
+    });
+    
+    // Add filter button listeners
+    modal.querySelectorAll('.filter-excuse-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        modal.querySelectorAll('.filter-excuse-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        loadExcuseLetters(modal, btn.dataset.status);
+      });
+    });
+  }
+
+  modal.classList.add("show");
+  modal.style.display = "flex";
+
+  const closeBtn = modal.querySelector("#closeExcuseLetters");
+  closeBtn.onclick = () => hideModal(modal);
+
+  // Load excuse letters
+  loadExcuseLetters(modal, 'pending_teacher');
+}
+
+// Load excuse letters for teacher
+async function loadExcuseLetters(modal, filterStatus = 'pending_teacher') {
+  const excuseRef = ref(db, 'excuseLetters');
+  const snapshot = await get(excuseRef);
+  const excuseList = modal.querySelector('#excuseLettersList');
+  
+  if (!snapshot.exists()) {
+    excuseList.innerHTML = "<p style='text-align: center; color: #6b7280; padding: 40px;'>No excuse letters submitted yet.</p>";
+    return;
+  }
+  
+  const excuseLetters = [];
+  snapshot.forEach(childSnap => {
+    const excuseData = childSnap.val();
+    // Only show excuse letters for this teacher
+    if (excuseData.teacherId === currentUser.uid) {
+      if (filterStatus === 'all' || excuseData.status === filterStatus) {
+        excuseLetters.push({
+          id: childSnap.key,
+          ...excuseData
+        });
+      }
+    }
+  });
+  
+  // Sort by submission date (newest first)
+  excuseLetters.sort((a, b) => b.submittedAt - a.submittedAt);
+  
+  if (excuseLetters.length === 0) {
+    excuseList.innerHTML = `<p style='text-align: center; color: #6b7280; padding: 40px;'>No ${filterStatus === 'all' ? '' : filterStatus.replace('_', ' ')} excuse letters.</p>`;
+    return;
+  }
+  
+  excuseList.innerHTML = excuseLetters.map(excuse => {
+    const statusColor = {
+      'pending_teacher': '#f59e0b',
+      'approved': '#10b981',
+      'rejected': '#ef4444'
+    }[excuse.status] || '#6b7280';
+    
+    const statusText = {
+      'pending_teacher': 'Pending',
+      'approved': 'Approved',
+      'rejected': 'Rejected'
+    }[excuse.status] || excuse.status;
+    
+    const submittedDate = new Date(excuse.submittedAt).toLocaleString();
+    
+    return `
+      <div class="excuse-letter-card" style="background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; margin-bottom: 15px;">
+        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+          <div>
+            <h5 style="margin: 0 0 5px 0; font-size: 16px;">${excuse.studentName}</h5>
+            <p style="margin: 0; color: #6b7280; font-size: 14px;">Student #: ${excuse.studentNumber}</p>
+            <p style="margin: 5px 0 0 0; color: #6b7280; font-size: 14px;">${excuse.className}</p>
+          </div>
+          <span style="background: ${statusColor}; color: white; padding: 4px 12px; border-radius: 12px; font-size: 13px; font-weight: 500;">
+            ${statusText}
+          </span>
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+          <p style="margin: 0 0 5px 0; font-weight: 500; color: #374151;">Date of Absence:</p>
+          <p style="margin: 0; color: #6b7280;">${excuse.date}</p>
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+          <p style="margin: 0 0 5px 0; font-weight: 500; color: #374151;">Reason:</p>
+          <p style="margin: 0; color: #6b7280;">${excuse.reason}</p>
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+          <p style="margin: 0 0 8px 0; font-weight: 500; color: #374151;">Attached Document:</p>
+          ${excuse.fileType.startsWith('image/') ? 
+            `<img src="${excuse.fileData}" style="max-width: 100%; max-height: 300px; border-radius: 8px; cursor: pointer;" onclick="window.open('${excuse.fileData}', '_blank')">` :
+            `<a href="${excuse.fileData}" download="${excuse.fileName}" style="color: #3b82f6; text-decoration: none;">
+              <i class="fas fa-file-pdf"></i> ${excuse.fileName}
+            </a>`
+          }
+        </div>
+        
+        <p style="margin: 10px 0 15px 0; color: #9ca3af; font-size: 13px;">Submitted: ${submittedDate}</p>
+        
+        ${excuse.status === 'pending_teacher' ? `
+          <div style="display: flex; gap: 10px;">
+            <button onclick="approveExcuseLetter('${excuse.id}', '${excuse.studentId}', '${excuse.classId}', '${excuse.department}', '${excuse.date}')" 
+                    style="flex: 1; background: #10b981; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 600; cursor: pointer;">
+              <i class="fas fa-check"></i> Approve
+            </button>
+            <button onclick="rejectExcuseLetter('${excuse.id}')" 
+                    style="flex: 1; background: #ef4444; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 600; cursor: pointer;">
+              <i class="fas fa-times"></i> Reject
+            </button>
+          </div>
+        ` : ''}
+        
+        ${excuse.status === 'approved' ? `
+          <p style="margin: 0; color: #10b981; font-size: 13px;">
+            <i class="fas fa-check-circle"></i> Approved on ${new Date(excuse.teacherApprovedAt).toLocaleString()}
+          </p>
+        ` : ''}
+        
+        ${excuse.status === 'rejected' ? `
+          <p style="margin: 0; color: #ef4444; font-size: 13px;">
+            <i class="fas fa-times-circle"></i> Rejected on ${new Date(excuse.teacherRejectedAt || excuse.teacherApprovedAt).toLocaleString()}
+            ${excuse.rejectionReason ? `<br>Reason: ${excuse.rejectionReason}` : ''}
+          </p>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+// Approve excuse letter
+window.approveExcuseLetter = async function(excuseId, studentId, classId, dept, date) {
+  if (!confirm('Approve this excuse letter? The student will be marked as Excused for this date.')) {
+    return;
+  }
+  
+  try {
+    // Update excuse letter status
+    await update(ref(db, `excuseLetters/${excuseId}`), {
+      status: 'approved',
+      teacherApprovedAt: Date.now(),
+      teacherApprovedBy: currentUser.uid
+    });
+    
+    // Mark student as excused in attendance
+    const attendanceRef = ref(db, 
+      `attendance/${currentUser.uid}/${dept}/${classId}/${date}/${studentId}`
+    );
+    await set(attendanceRef, {
+      status: 'excused',
+      timestamp: Date.now(),
+      date: date,
+      excuseLetterId: excuseId,
+      approvedBy: currentUser.uid
+    });
+    
+    // Send notification to student
+    const notificationRef = push(ref(db, `notifications/${studentId}`));
+    await set(notificationRef, {
+      title: 'Excuse Letter Approved',
+      message: `Your excuse letter for ${date} has been approved. You have been marked as Excused.`,
+      type: 'excuse_approved',
+      timestamp: Date.now(),
+      read: false,
+      excuseId: excuseId
+    });
+    
+    showToast('Excuse letter approved! Student marked as Excused.');
+    
+    // Reload the modal
+    const modal = document.getElementById("excuseLettersModal");
+    const activeFilter = modal.querySelector('.filter-excuse-btn.active');
+    loadExcuseLetters(modal, activeFilter.dataset.status);
+    
+  } catch (error) {
+    console.error('Error approving excuse letter:', error);
+    alert('Failed to approve excuse letter. Please try again.');
+  }
+};
+
+// Reject excuse letter
+window.rejectExcuseLetter = async function(excuseId) {
+  const reason = prompt('Enter reason for rejection (optional):');
+  
+  if (reason === null) return; // User clicked cancel
+  
+  try {
+    // Get excuse letter data to send notification and mark attendance
+    const excuseRef = ref(db, `excuseLetters/${excuseId}`);
+    const excuseSnap = await get(excuseRef);
+    const excuseData = excuseSnap.val();
+    
+    // Update excuse letter status
+    await update(excuseRef, {
+      status: 'rejected',
+      teacherRejectedAt: Date.now(),
+      rejectionReason: reason || 'No reason provided',
+      rejectedBy: currentUser.uid
+    });
+    
+    // Mark student as ABSENT when excuse letter is rejected
+    const attendanceRef = ref(db, 
+      `attendance/${currentUser.uid}/${excuseData.department}/${excuseData.classId}/${excuseData.date}/${excuseData.studentId}`
+    );
+    await set(attendanceRef, {
+      status: 'absent',
+      timestamp: Date.now(),
+      date: excuseData.date,
+      excuseLetterId: excuseId,
+      rejectedBy: currentUser.uid,
+      rejectionReason: reason || 'No reason provided'
+    });
+    
+    // Send notification to student
+    const notificationRef = push(ref(db, `notifications/${excuseData.studentId}`));
+    await set(notificationRef, {
+      title: 'Excuse Letter Rejected',
+      message: `Your excuse letter for ${excuseData.date} has been rejected and you have been marked as Absent. Reason: ${reason || 'No reason provided'}`,
+      type: 'excuse_rejected',
+      timestamp: Date.now(),
+      read: false,
+      excuseId: excuseId
+    });
+    
+    showToast('Excuse letter rejected. Student marked as Absent.');
+    
+    // Reload the modal
+    const modal = document.getElementById("excuseLettersModal");
+    const activeFilter = modal.querySelector('.filter-excuse-btn.active');
+    loadExcuseLetters(modal, activeFilter.dataset.status);
+    
+  } catch (error) {
+    console.error('Error rejecting excuse letter:', error);
+    alert('Failed to reject excuse letter. Please try again.');
+  }
+};
+
 // 📦 Load all classes
 function loadTeacherClasses() {
   const classesRef = ref(db, `classes/${currentUser.uid}/${department}`);
@@ -93,6 +362,8 @@ function loadTeacherClasses() {
       const classData = childSnap.val();
       renderClassItem(childSnap.key, classData.sectionName, classData.subjectName);
     });
+    // Signal that class list content has been rendered so the entering animation can finish
+    if (window.markContentReady) window.markContentReady();
   });
 }
 
@@ -110,6 +381,7 @@ function renderClassItem(classId, sectionName, subjectName, shareCode) {
       <div class="menu-dropdown hidden">
         <button class="edit-btn">Edit</button>
         <button class="schedule-btn">Set Schedule</button>
+        <button class="excuse-letters-btn">Excuse Letters</button>
         <button class="delete-btn">Delete</button>
         <button class="share-btn">Share</button>
       </div>
@@ -120,6 +392,7 @@ function renderClassItem(classId, sectionName, subjectName, shareCode) {
   const dropdown = item.querySelector(".menu-dropdown");
   const editBtn = item.querySelector(".edit-btn");
   const scheduleBtn = item.querySelector(".schedule-btn");
+  const excuseLettersBtn = item.querySelector(".excuse-letters-btn");
   const deleteBtn = item.querySelector(".delete-btn");
   const shareBtn = item.querySelector(".share-btn");
 
@@ -206,6 +479,12 @@ function renderClassItem(classId, sectionName, subjectName, shareCode) {
     e.stopPropagation();
     dropdown.classList.add("hidden");
     showScheduleModal(classId, sectionName, subjectName);
+  });
+
+  excuseLettersBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    dropdown.classList.add("hidden");
+    showExcuseLettersModal();
   });
 
   deleteBtn.addEventListener("click", (e) => {
@@ -396,7 +675,6 @@ function showDateManagementModal(classId) {
   addDateBtn.onclick = () => addCustomDate(classId);
   closeBtn.onclick = () => {
     hideModal(modal);
-    // Reload student list to reflect changes
     const activeClass = document.querySelector('.class-item.active');
     if (activeClass) {
       const sectionName = activeClass.querySelector('.section-name').textContent;
@@ -419,7 +697,6 @@ function loadCustomDates(classId, container) {
         });
       });
       
-      // Sort dates chronologically
       dates.sort((a, b) => new Date(a.value) - new Date(b.value));
       
       dates.forEach(dateItem => {
@@ -468,7 +745,6 @@ function renderDateRow(classId, container, dateKey, dateValue) {
     row.remove();
     showToast("Date removed");
     
-    // Check if no dates left
     const remainingRows = container.querySelectorAll('.date-mgmt-row');
     if (remainingRows.length === 0) {
       container.innerHTML = "<p class='no-dates'>No dates configured. Add dates to track attendance.</p>";
@@ -540,7 +816,6 @@ function showToast(message = "Link copied!") {
   setTimeout(() => toast.classList.remove("show"), 2000);
 }
 
-// Mark all students as async for a specific date
 async function markAllStudentsAsAsync(classId, date) {
   const studentsRef = ref(db, `classes/${currentUser.uid}/${department}/${classId}/students`);
   const snapshot = await get(studentsRef);
@@ -562,14 +837,34 @@ async function markAllStudentsAsAsync(classId, date) {
   }
 }
 
-// 👩‍🏫 Student list
+async function removeAllAsyncAttendance(classId, date) {
+  const attendanceRef = ref(db, 
+    `attendance/${currentUser.uid}/${department}/${classId}/${date}`
+  );
+  const snapshot = await get(attendanceRef);
+  
+  if (snapshot.exists()) {
+    const promises = [];
+    snapshot.forEach(childSnap => {
+      const attendanceData = childSnap.val();
+      // Only remove if status is 'async'
+      if (attendanceData.status === 'async') {
+        promises.push(remove(ref(db, 
+          `attendance/${currentUser.uid}/${department}/${classId}/${date}/${childSnap.key}`
+        )));
+      }
+    });
+    await Promise.all(promises);
+    console.log(`✅ Removed all AC marks for ${date}`);
+  }
+}
+
 function openStudentList(classId, sectionName, subjectName) {
   currentClassId = classId;
   setCurrentClassId(classId);
   studentPanel.classList.remove("hidden");
   studentPanel.classList.add("visible");
   
-  // Load custom dates from database
   const datesRef = ref(db, `classes/${currentUser.uid}/${department}/${classId}/customDates`);
   onValue(datesRef, (dateSnapshot) => {
     if (dateSnapshot.exists()) {
@@ -577,10 +872,8 @@ function openStudentList(classId, sectionName, subjectName) {
       dateSnapshot.forEach(childSnap => {
         dates.push(childSnap.val());
       });
-      // Sort dates chronologically
       displayDates = dates.sort((a, b) => new Date(a) - new Date(b));
     } else {
-      // If no custom dates, create default ones
       displayDates = getDefaultDates();
       const datesObj = {};
       displayDates.forEach((date, index) => {
@@ -610,10 +903,8 @@ function openStudentList(classId, sectionName, subjectName) {
       `;
     });
 
-    // Show async toggle
     asyncToggle.classList.remove("hidden");
     
-    // Check if async mode should be ON for today's date
     const today = new Date().toISOString().split('T')[0];
     const asyncDatesRef = ref(db, `classes/${currentUser.uid}/${department}/${classId}/asyncDates`);
     onValue(asyncDatesRef, (asyncSnapshot) => {
@@ -626,7 +917,6 @@ function openStudentList(classId, sectionName, subjectName) {
       }
     }, { onlyOnce: true });
     
-    // Handle async switch toggle
     asyncSwitch.onchange = (e) => {
       isAsyncMode = e.target.checked;
       if (isAsyncMode) {
@@ -710,7 +1000,6 @@ function renderStudentList(studentsArray, classId) {
     </div>
   `;
   
-  // Add event listener to edit dates button
   const editDatesBtn = studentList.querySelector('#editDatesBtn');
   editDatesBtn.addEventListener('click', () => {
     showDateManagementModal(classId);
@@ -759,7 +1048,6 @@ function renderStudentList(studentsArray, classId) {
         `attendance/${currentUser.uid}/${department}/${classId}/${date}/${student.id}`
       );
       
-      // Real-time listener (removed onlyOnce for automatic updates)
       onValue(attendanceRef, (snapshot) => {
         const cell = row.querySelector(`.date-cell[data-student="${student.id}"][data-date="${date}"]`);
         if (cell) {
@@ -792,7 +1080,7 @@ function renderStudentList(studentsArray, classId) {
             showStatusMenu(cell, student.id, date);
           });
         }
-      }); // No { onlyOnce: true } for real-time updates
+      });
     });
     
     grid.appendChild(row);
@@ -841,7 +1129,66 @@ function showStatusMenu(cell, studentId, date) {
   }, 10);
 }
 
-// Show date picker when async mode is ON
+// Add this function to send notifications to all students when async mode is enabled
+async function notifyStudentsAboutAsync(classId, date, isAsync) {
+  try {
+    // Get class data
+    const classRef = ref(db, `classes/${currentUser.uid}/${department}/${classId}`);
+    const classSnap = await get(classRef);
+    
+    if (!classSnap.exists()) return;
+    
+    const classData = classSnap.val();
+    const className = `${classData.sectionName} - ${classData.subjectName}`;
+    
+    // Get all students in the class
+    const studentsRef = ref(db, `classes/${currentUser.uid}/${department}/${classId}/students`);
+    const studentsSnap = await get(studentsRef);
+    
+    if (!studentsSnap.exists()) return;
+    
+    // Send notification to each student
+    const notificationPromises = [];
+    
+    studentsSnap.forEach(studentSnap => {
+      const studentId = studentSnap.key;
+      const notificationRef = push(ref(db, `notifications/${studentId}`));
+      
+      let title, message;
+      
+      if (isAsync) {
+        title = 'Class Changed to Asynchronous';
+        message = `${className} on ${date} has been changed to asynchronous class. You have been marked as AC (Async).`;
+      } else {
+        title = 'Asynchronous Class Cancelled';
+        message = `${className} on ${date} is no longer asynchronous. Regular attendance will be taken.`;
+      }
+      
+      const notificationPromise = set(notificationRef, {
+        title: title,
+        message: message,
+        type: 'class_async',
+        classId: classId,
+        className: className,
+        date: date,
+        department: department,
+        teacherId: currentUser.uid,
+        timestamp: Date.now(),
+        read: false
+      });
+      
+      notificationPromises.push(notificationPromise);
+    });
+    
+    await Promise.all(notificationPromises);
+    console.log(`✅ Sent async notifications to ${notificationPromises.length} students`);
+    
+  } catch (error) {
+    console.error('Error sending async notifications:', error);
+  }
+}
+
+// Update the showAsyncDatePicker function to include notifications
 function showAsyncDatePicker(classId) {
   let modal = document.getElementById("asyncModal");
 
@@ -876,49 +1223,74 @@ function showAsyncDatePicker(classId) {
   const dateList = modal.querySelector("#asyncDateList");
   const closeBtn = modal.querySelector("#closeAsync");
 
-  const asyncDatesRef = ref(db, `classes/${currentUser.uid}/${department}/${classId}/asyncDates`);
-  onValue(asyncDatesRef, (asyncSnapshot) => {
-    const asyncDates = {};
-    if (asyncSnapshot.exists()) {
-      asyncSnapshot.forEach(child => {
-        asyncDates[child.key] = true;
-      });
-    }
-
-    dateList.innerHTML = displayDates.map(date => {
-      const dateObj = new Date(date);
-      const formatted = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
-      const isChecked = asyncDates[date] ? 'checked' : '';
-      
-      return `
-        <label class="async-date-option">
-          <input type="checkbox" value="${date}" ${isChecked}>
-          <span>${formatted}</span>
-        </label>
-      `;
-    }).join('');
-
-    dateList.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-      checkbox.addEventListener('change', async (e) => {
-        const date = e.target.value;
-        const asyncDateRef = ref(db, `classes/${currentUser.uid}/${department}/${classId}/asyncDates/${date}`);
-        
-        if (e.target.checked) {
-          await set(asyncDateRef, true);
-          // Mark all students as AC for this date
-          await markAllStudentsAsAsync(classId, date);
-          showToast(`${date} marked as async - all students marked AC`);
-        } else {
-          await remove(asyncDateRef);
-          showToast(`${date} unmarked`);
-        }
-      });
-    });
-  }, { onlyOnce: true });
+  // Load async dates once and attach listeners properly
+  loadAsyncDates(classId, dateList);
 
   closeBtn.onclick = () => {
     hideModal(modal);
     asyncSwitch.checked = false;
     isAsyncMode = false;
   };
+}
+
+// Separate function to load and handle async dates
+async function loadAsyncDates(classId, container) {
+  const asyncDatesRef = ref(db, `classes/${currentUser.uid}/${department}/${classId}/asyncDates`);
+  const asyncSnapshot = await get(asyncDatesRef);
+  
+  const asyncDates = {};
+  if (asyncSnapshot.exists()) {
+    asyncSnapshot.forEach(child => {
+      asyncDates[child.key] = true;
+    });
+  }
+
+  container.innerHTML = displayDates.map(date => {
+    const dateObj = new Date(date);
+    const formatted = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+    const isChecked = asyncDates[date] ? 'checked' : '';
+    
+    return `
+      <label class="async-date-option">
+        <input type="checkbox" value="${date}" ${isChecked} data-initial="${isChecked}">
+        <span>${formatted}</span>
+      </label>
+    `;
+  }).join('');
+
+  // Attach event listeners only once
+  container.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+    checkbox.addEventListener('change', async (e) => {
+      const date = e.target.value;
+      const isNowChecked = e.target.checked;
+      const wasInitiallyChecked = e.target.dataset.initial === 'checked';
+      
+      // Only proceed if the state actually changed from initial
+      if ((isNowChecked && !wasInitiallyChecked) || (!isNowChecked && wasInitiallyChecked)) {
+        const asyncDateRef = ref(db, `classes/${currentUser.uid}/${department}/${classId}/asyncDates/${date}`);
+        
+        if (isNowChecked) {
+          await set(asyncDateRef, true);
+          await markAllStudentsAsAsync(classId, date);
+          
+          // Send notifications to students
+          await notifyStudentsAboutAsync(classId, date, true);
+          
+          showToast(`${date} marked as async - all students notified`);
+        } else {
+          await remove(asyncDateRef);
+
+          await removeAllAsyncAttendance(classId, date);
+    
+          // Send notifications to students about cancellation
+          await notifyStudentsAboutAsync(classId, date, false);
+          
+          showToast(`${date} unmarked - students notified`);
+        }
+        
+        // Update the initial state
+        e.target.dataset.initial = isNowChecked ? 'checked' : '';
+      }
+    });
+  });
 }

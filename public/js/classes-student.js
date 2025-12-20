@@ -190,7 +190,7 @@ function showExcuseLetterModal() {
         modal.innerHTML = `
             <div class="modal-box excuse-modal">
                 <h4>Submit Excuse Letter</h4>
-                <p>Upload your excuse letter for approval</p>
+                <p>Upload your excuse letter for teacher approval</p>
                 
                 <label style="display:block; margin-bottom:8px; font-weight:500; color:#333;">Select Date:</label>
                 <input type="date" id="excuseDate" style="width:100%; padding:10px; margin-bottom:15px; border-radius:8px; border:1px solid #ccc; font-family:'Poppins', sans-serif;">
@@ -262,7 +262,7 @@ function showExcuseLetterModal() {
                 studentNumber = info.idNumber || "N/A";
             }
 
-            // Create excuse letter request
+            // Create excuse letter request - goes directly to teacher (status: pending_teacher)
             const excuseRef = push(ref(db, 'excuseLetters'));
             await set(excuseRef, {
                 studentId: currentUser.uid,
@@ -277,15 +277,29 @@ function showExcuseLetterModal() {
                 fileData: fileData,
                 fileName: file.name,
                 fileType: file.type,
-                status: 'pending_admin', // pending_admin -> pending_teacher -> approved
+                status: 'pending_teacher', // Changed from 'pending' to 'pending_teacher'
                 submittedAt: Date.now(),
-                adminApprovedAt: null,
-                adminApprovedBy: null,
-                teacherApprovedAt: null,
-                teacherApprovedBy: null
+                approvedAt: null,
+                approvedBy: null,
+                rejectedAt: null,
+                rejectionReason: null
             });
 
-            alert("Excuse letter submitted successfully! Awaiting admin approval.");
+            // Send notification to teacher
+            const notificationRef = push(ref(db, `notifications/${currentClassData.teacherId}`));
+            await set(notificationRef, {
+                title: 'New Excuse Letter',
+                message: `${studentName} submitted an excuse letter for ${date} in ${currentClassData.sectionName} - ${currentClassData.subjectName}`,
+                type: 'excuse_letter',
+                timestamp: Date.now(),
+                read: false,
+                excuseId: excuseRef.key,
+                studentId: currentUser.uid,
+                classId: currentClassData.classId,
+                department: currentClassData.department
+            });
+
+            alert("Excuse letter submitted successfully! Awaiting teacher approval.");
             modal.classList.remove("show");
             
             // Clear form
@@ -323,6 +337,8 @@ function loadJoinedClasses() {
 
 // 🎨 Render class in sidebar
 function renderClassItem(classId, sectionName, subjectName, teacherId, department) {
+        // Signal that initial dynamic content has been rendered (if navigation helper exists)
+        if (window.markContentReady) window.markContentReady();
     const item = document.createElement("div");
     item.classList.add("class-item");
     item.innerHTML = `
