@@ -1,0 +1,91 @@
+<!-- ✅ Reusable Verify Modal -->
+<div id="verifyModal" class="modal">
+  <div class="modal-overlay"></div>
+  <div class="modal-content">
+    <h3 id="verifyTitle">Account Verification Required</h3>
+    <p id="verifyMessage">
+      Your account is not yet verified. Please verify your account before accessing this feature.
+    </p>
+    <button id="closeVerifyModal">OK</button>
+  </div>
+</div>
+
+<style>
+  /* ======= Modal Base ======= */
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    inset: 0;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(0px);
+    transition: backdrop-filter 0.3s ease;
+  }
+
+  .modal.show {
+    display: flex;
+    backdrop-filter: blur(4px); /* 🔥 Background blur effect */
+  }
+
+  /* ======= Overlay Background ======= */
+  .modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4); /* Dark dim overlay */
+  }
+
+  /* ======= Modal Box ======= */
+  .modal-content {
+    position: relative;
+    background-color: #ffffff;
+    border-radius: 14px;
+    padding: 25px 20px;
+    max-width: 420px;
+    text-align: center;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+    animation: fadeInUp 0.3s ease;
+    z-index: 10000;
+  }
+
+  /* ======= Title & Text ======= */
+  .modal-content h3 {
+    color: #006633;
+    margin-bottom: 12px;
+    font-weight: 600;
+  }
+
+  .modal-content p {
+    font-size: 0.95rem;
+    color: #444;
+    margin-bottom: 18px;
+  }
+
+  /* ======= Button ======= */
+  #closeVerifyModal {
+    background-color: #006633;
+    color: white;
+    border: none;
+    padding: 10px 22px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.2s ease;
+  }
+
+  #closeVerifyModal:hover {
+    background-color: #00994c;
+  }
+
+  /* ======= Animation ======= */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>
