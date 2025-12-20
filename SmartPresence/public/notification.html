@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartPresence | Notifications</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="shortcut icon" href="img/favicon.png" type="image/x-icon">
+  <link rel="stylesheet" href="css/notification.css">
+</head>
+<body>
+  <div class="notification-container">
+    <div class="notification-header">
+      <h2><i class="fas fa-bell"></i> Notifications</h2>
+      <span class="notification-count">3</span>
+      <button class="mark-all-read">Mark all as read</button>
+    </div>
+    
+    <div class="notification-filters">
+      <button class="filter-btn active">All</button>
+      <button class="filter-btn">Unread</button>
+      <button class="filter-btn">Read</button>
+    </div>
+
+    <div class="notification-list" id="notificationList">
+      <!-- Notifications will be dynamically inserted here -->
+    </div>
+  </div>
+
+  <script type="module" src="js/notification.js"></script>
+  <script type="module" src="js/navigation.js"></script>
+</body>
+</html>
