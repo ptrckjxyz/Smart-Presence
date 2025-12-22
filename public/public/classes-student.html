@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Classes | CvSU Smart Presence</title>
+  <link rel="stylesheet" href="css/classes.css" />
+  <link rel="stylesheet" href="css/dashboard.css" />
+  <link rel="shortcut icon" href="img/favicon.png" type="image/x-icon" />
+</head>
+<body>
+  <!-- ===== Department Header ===== -->
+  <div class="dept-header">
+    <button class="back-btn" onclick="navigateWithFade('dashboard-student.html')">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="#006633" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+        <path d="M15 18l-6-6 6-6"/>
+      </svg>
+    </button>
+    <h2 class="dept-title">My Classes</h2>
+  </div>
+
+  <!-- ===== Dashboard Layout ===== -->
+  <div class="dashboard-layout">
+    <!-- Sidebar (Joined Classes) -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <h3>Joined Classes</h3>
+        <button id="addClassBtn" class="add-btn">+</button>
+      </div>
+      <div id="classList" class="class-list"></div>
+    </div>
+
+    <!-- Right Panel (Student Attendance) -->
+    <div class="main-content hidden" id="studentPanel">
+      <div class="panel-header">
+        <div>
+          <h3 id="panelTitle" class="panel-main-title">Select a class to view your attendance</h3>
+          <div id="panelSchedule" class="panel-schedule" style="display:none;"></div>
+          <div id="panelClassCode" class="panel-class-code" style="display:none;"></div>
+        </div>
+        <div class="attendance-methods">
+          <!-- QR Scanner Button -->
+          <button class="method-btn" id="qrScannerBtn" title="Scan QR Code">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="3" y="3" width="8" height="8" stroke="currentColor" stroke-width="2"/>
+              <rect x="5" y="5" width="4" height="4" fill="currentColor"/>
+              <rect x="13" y="3" width="8" height="8" stroke="currentColor" stroke-width="2"/>
+              <rect x="15" y="5" width="4" height="4" fill="currentColor"/>
+              <rect x="3" y="13" width="8" height="8" stroke="currentColor" stroke-width="2"/>
+              <rect x="5" y="15" width="4" height="4" fill="currentColor"/>
+              <path d="M13 13h2v2h-2v-2zm2 2h2v2h-2v-2zm-2 2h2v2h-2v-2zm4 0h2v2h-2v-2zm0-4h2v2h-2v-2zm2 2h2v2h-2v-2z" fill="currentColor"/>
+            </svg>
+          </button>
+          
+          <!-- Excuse Letter Button -->
+          <button class="method-btn" id="excuseLetterBtn" title="Submit Excuse Letter">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div id="studentList" class="student-view"></div>
+    </div>
+  </div>
+
+  <!-- Join Class Modal -->
+  <div id="joinClassModal" class="modal-overlay">
+    <div class="modal-box">
+      <h4>Join a Class</h4>
+      <p>Enter the class code provided by your teacher:</p>
+      <input type="text" id="classCodeInput" placeholder="Class Code" style="width:100%; padding:8px; margin-bottom:15px; border-radius:6px; border:1px solid #ccc;">
+      <div class="modal-actions">
+        <button id="cancelJoin" class="cancel-btn">Cancel</button>
+        <button id="confirmJoin" class="confirm-btn">Join</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Scripts ===== -->
+  <script type="module" src="js/classes-student.js"></script>
+  <script type="module" src="js/navigation.js"></script>
+</body>
+</html>
