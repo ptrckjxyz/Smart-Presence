@@ -491,6 +491,75 @@ body {
     background: #fecaca !important;
 }
 
+/* Modal styles for Stop Session confirmation — match logout modal design */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    backdrop-filter: blur(3px);
+}
+
+.modal-box {
+    background: #fff;
+    border-radius: 12px;
+    padding: 25px 30px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    max-width: 320px !important;
+    width: 90% !important;
+    box-sizing: border-box;
+    animation: fadeIn 0.25s ease-in-out;
+}
+
+.modal-box h3 {
+    color: #1e3a8a;
+    font-size: 1.1rem;
+    margin-bottom: 12px;
+}
+
+.modal-box p {
+    color: #4b5563;
+    margin-bottom: 16px;
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.confirm-btn {
+    background: #006633;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.confirm-btn:hover {
+    background: #00994c;
+}
+
+.cancel-btn {
+    background: #ddd;
+    color: #333;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.cancel-btn:hover {
+    background: #ccc;
+}
+
 /* QR Display Section */
 .qr-display {
     margin-top: 30px;

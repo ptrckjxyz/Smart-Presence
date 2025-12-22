@@ -564,6 +564,20 @@ cancelLogout.addEventListener("click", () => {
   logoutModal.style.display = "none";
 });
 
+// Close when clicking outside the modal box
+logoutModal.addEventListener('click', (e) => {
+  if (e.target === logoutModal) {
+    logoutModal.style.display = 'none';
+  }
+});
+
+// Close with Escape key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && logoutModal.style.display === 'flex') {
+    logoutModal.style.display = 'none';
+  }
+});
+
 confirmLogout.addEventListener("click", async () => {
   await signOut(auth);
   window.location.href = "index.html";

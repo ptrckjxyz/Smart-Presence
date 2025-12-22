@@ -980,6 +980,8 @@ tbody tr.hidden {
   backdrop-filter: blur(3px);
 }
 
+/* (Modal background scroll locking removed — allow page scroll while modal is open) */
+
 .modal-box {
   background: #fff;
   border-radius: 12px;
@@ -1448,9 +1450,16 @@ tbody tr.hidden {
 }
 
 .modal-overlay {
-  position: absolute;
+  /* Ensure overlay covers the whole viewport (fix for partial overlay) */
+  position: fixed;
   inset: 0;
+  width: 100vw;
+  height: 100vh;
   background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
   cursor: pointer;
 }
 

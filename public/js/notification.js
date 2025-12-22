@@ -318,11 +318,13 @@ window.viewExcuseLetterFromNotification = async function(excuseId) {
 };
 
 // Approve excuse from notification
-window.approveExcuseFromNotification = async function(excuseId, studentId, classId, dept, notificationId) {
-  if (!confirm('Approve this excuse letter? The student will be marked as Excused for this date.')) {
-    return;
-  }
-  
+// Pending context for modal-driven approve/reject
+let pendingApprove = null;
+let pendingReject = null;
+let pendingDelete = null;
+
+// Core approve action (moved from original function body)
+async function approveExcuseAction(excuseId, studentId, classId, dept, notificationId) {
   try {
     // Get excuse letter data first to get all the correct information
     const excuseRef = ref(db, `excuseLetters/${excuseId}`);
@@ -398,14 +400,18 @@ window.approveExcuseFromNotification = async function(excuseId, studentId, class
     console.error('Error approving excuse letter:', error);
     alert('Failed to approve excuse letter. Please try again.');
   }
+}
+
+// Show confirmation modal instead of native confirm
+window.approveExcuseFromNotification = function(excuseId, studentId, classId, dept, notificationId) {
+  pendingApprove = {excuseId, studentId, classId, dept, notificationId};
+  const modal = document.getElementById('approveExcuseModal');
+  if (modal) modal.style.display = 'flex';
 };
 
 // Reject excuse from notification
-window.rejectExcuseFromNotification = async function(excuseId, notificationId) {
-  const reason = prompt('Enter reason for rejection (optional):');
-  
-  if (reason === null) return;
-  
+// Core reject action (moved from original function body)
+async function rejectExcuseAction(excuseId, notificationId, reason) {
   try {
     // Get excuse letter data
     const excuseRef = ref(db, `excuseLetters/${excuseId}`);
@@ -483,6 +489,15 @@ window.rejectExcuseFromNotification = async function(excuseId, notificationId) {
     console.error('Error rejecting excuse letter:', error);
     alert('Failed to reject excuse letter. Please try again.');
   }
+}
+
+// Show reject modal with reason input instead of prompt
+window.rejectExcuseFromNotification = function(excuseId, notificationId) {
+  pendingReject = {excuseId, notificationId};
+  const modal = document.getElementById('rejectExcuseModal');
+  const input = document.getElementById('rejectReasonInput');
+  if (input) input.value = '';
+  if (modal) modal.style.display = 'flex';
 };
 
 // Get notification icon based on type
@@ -502,6 +517,76 @@ function getNotificationIcon(type) {
   };
   return icons[type] || 'fas fa-bell';
 }
+
+// Wire up modal confirm/cancel buttons for approve/reject
+document.addEventListener('DOMContentLoaded', () => {
+  const approveModal = document.getElementById('approveExcuseModal');
+  const approveConfirm = document.getElementById('approveExcuseConfirm');
+  const approveCancel = document.getElementById('approveExcuseCancel');
+
+  const rejectModal = document.getElementById('rejectExcuseModal');
+  const rejectConfirm = document.getElementById('rejectExcuseConfirm');
+  const rejectCancel = document.getElementById('rejectExcuseCancel');
+  const rejectInput = document.getElementById('rejectReasonInput');
+
+  const deleteModal = document.getElementById('deleteNotificationModal');
+  const deleteConfirm = document.getElementById('deleteNotificationConfirm');
+  const deleteCancel = document.getElementById('deleteNotificationCancel');
+
+  if (approveCancel && approveModal) approveCancel.addEventListener('click', () => approveModal.style.display = 'none');
+  if (approveModal) approveModal.addEventListener('click', (e) => { if (e.target === approveModal) approveModal.style.display = 'none'; });
+
+  if (rejectCancel && rejectModal) rejectCancel.addEventListener('click', () => rejectModal.style.display = 'none');
+  if (rejectModal) rejectModal.addEventListener('click', (e) => { if (e.target === rejectModal) rejectModal.style.display = 'none'; });
+
+  if (deleteCancel && deleteModal) deleteCancel.addEventListener('click', () => deleteModal.style.display = 'none');
+  if (deleteModal) deleteModal.addEventListener('click', (e) => { if (e.target === deleteModal) deleteModal.style.display = 'none'; });
+
+  if (approveConfirm) approveConfirm.addEventListener('click', async () => {
+    if (!pendingApprove) return;
+    const ctx = pendingApprove;
+    pendingApprove = null;
+    const modal = document.getElementById('approveExcuseModal');
+    if (modal) modal.style.display = 'none';
+    await approveExcuseAction(ctx.excuseId, ctx.studentId, ctx.classId, ctx.dept, ctx.notificationId);
+  });
+
+  if (rejectConfirm) rejectConfirm.addEventListener('click', async () => {
+    if (!pendingReject) return;
+    const ctx = pendingReject;
+    pendingReject = null;
+    const reason = rejectInput ? rejectInput.value.trim() : '';
+    const modal = document.getElementById('rejectExcuseModal');
+    if (modal) modal.style.display = 'none';
+    await rejectExcuseAction(ctx.excuseId, ctx.notificationId, reason);
+  });
+
+  if (deleteConfirm) deleteConfirm.addEventListener('click', async () => {
+    if (!pendingDelete) return;
+    const ctx = pendingDelete;
+    pendingDelete = null;
+    const modal = document.getElementById('deleteNotificationModal');
+    if (modal) modal.style.display = 'none';
+    console.log('🗑️ Deleting notification:', ctx.notificationId);
+    try {
+      await remove(ref(db, `notifications/${currentUser.uid}/${ctx.notificationId}`));
+      console.log('✅ Deleted successfully');
+      // Optionally re-render notifications or rely on realtime listener
+      loadNotifications();
+    } catch (error) {
+      console.error('❌ Error deleting notification:', error);
+    }
+  });
+
+  // Escape key closes modals
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      if (approveModal && approveModal.style.display === 'flex') approveModal.style.display = 'none';
+      if (rejectModal && rejectModal.style.display === 'flex') rejectModal.style.display = 'none';
+      if (deleteModal && deleteModal.style.display === 'flex') deleteModal.style.display = 'none';
+    }
+  });
+});
 
 // Get time ago string
 function getTimeAgo(timestamp) {
@@ -529,16 +614,11 @@ window.markAsRead = async function(notificationId) {
 };
 
 // Delete notification
-window.deleteNotification = async function(notificationId) {
-  if (confirm('Delete this notification?')) {
-    console.log('🗑️ Deleting notification:', notificationId);
-    try {
-      await remove(ref(db, `notifications/${currentUser.uid}/${notificationId}`));
-      console.log('✅ Deleted successfully');
-    } catch (error) {
-      console.error('❌ Error deleting notification:', error);
-    }
-  }
+window.deleteNotification = function(notificationId) {
+  // show modal and store context
+  pendingDelete = { notificationId };
+  const modal = document.getElementById('deleteNotificationModal');
+  if (modal) modal.style.display = 'flex';
 };
 
 // Setup event listeners

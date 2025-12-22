@@ -153,6 +153,17 @@
   </div>
 
   <!-- ===== Scripts ===== -->
+  <!-- Stop Session Confirmation Modal -->
+  <div id="stopSessionModal" class="modal-overlay" style="display:none;">
+    <div class="modal-box">
+      <h3>Stop attendance session?</h3>
+      <p>This will finalize all attendance records and reload the page.</p>
+      <div class="modal-buttons">
+        <button id="stopConfirmBtn" class="confirm-btn">Yes</button>
+        <button id="stopCancelBtn" class="cancel-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
   <script type="module" src="js/qr-attendance.js"></script>
   <script type="module" src="js/navigation.js"></script>
 </body>

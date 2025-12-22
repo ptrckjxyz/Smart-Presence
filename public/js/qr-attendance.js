@@ -614,14 +614,36 @@ function downloadEnhancedQRCode() {
 }
 
 // Stop Session
-stopSessionBtn.addEventListener("click", async () => {
-  if (confirm("Are you sure you want to stop this attendance session? This will finalize all attendance records and reload the page.")) {
-    await endSession();
-    // Reload the page after ending session
-    setTimeout(() => {
-      window.location.reload();
-    }, 1500);
-  }
+// Stop Session replaced with modal confirmation
+const stopSessionModal = document.getElementById('stopSessionModal');
+const stopConfirmBtn = document.getElementById('stopConfirmBtn');
+const stopCancelBtn = document.getElementById('stopCancelBtn');
+
+stopSessionBtn.addEventListener("click", () => {
+  stopSessionModal.style.display = 'flex';
+});
+
+stopCancelBtn.addEventListener('click', () => {
+  stopSessionModal.style.display = 'none';
+});
+
+// Close when clicking overlay
+stopSessionModal.addEventListener('click', (e) => {
+  if (e.target === stopSessionModal) stopSessionModal.style.display = 'none';
+});
+
+// Close with Escape key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && stopSessionModal.style.display === 'flex') stopSessionModal.style.display = 'none';
+});
+
+stopConfirmBtn.addEventListener('click', async () => {
+  stopSessionModal.style.display = 'none';
+  await endSession();
+  // Reload the page after ending session
+  setTimeout(() => {
+    window.location.reload();
+  }, 1500);
 });
 
 // End session
