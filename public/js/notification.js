@@ -7,6 +7,47 @@ let userRole = null;
 let notificationCheckInterval = null;
 let allNotifications = [];
 
+// Simple notifier wrapper: use showToast if available, otherwise fallback to alert
+// Ensure a global showToast exists (fallback) so other pages can use toast notifications
+if (typeof window.showToast !== 'function') {
+  window.showToast = function(message, type) {
+    let toast = document.querySelector('.global-toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.className = 'global-toast';
+      document.body.appendChild(toast);
+      const style = document.createElement('style');
+      style.textContent = `
+        .global-toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(100px); padding: 0.9rem 1.2rem; border-radius: 10px; color: #fff; font-weight:600; z-index:20000; opacity:0; transition: all .28s ease; box-shadow: 0 10px 30px rgba(0,0,0,.25); }
+        .global-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        .global-toast.success { background: #16a34a; }
+        .global-toast.error { background: #dc2626; }
+        .global-toast.info { background: #0ea5e9; }
+        .global-toast.default { background: #1e293b; }
+      `;
+      document.head.appendChild(style);
+    }
+    toast.textContent = message;
+    toast.className = 'global-toast show ' + (type || 'default');
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(() => {
+      toast.classList.remove('show');
+    }, 3000);
+  };
+}
+
+function notify(message, type) {
+  if (typeof showToast === 'function') {
+    try {
+      showToast(message, type);
+      return;
+    } catch (e) {
+      console.error('notify: showToast error', e);
+    }
+  }
+  alert(message);
+}
+
 // Initialize notifications
 onAuthStateChanged(auth, (user) => {
   if (user) {
@@ -234,7 +275,7 @@ window.viewExcuseLetterFromNotification = async function(excuseId) {
     const excuseSnap = await get(excuseRef);
     
     if (!excuseSnap.exists()) {
-      alert('Excuse letter not found.');
+      notify('Excuse letter not found.', 'error');
       return;
     }
     
@@ -313,7 +354,7 @@ window.viewExcuseLetterFromNotification = async function(excuseId) {
     
   } catch (error) {
     console.error('Error viewing excuse letter:', error);
-    alert('Failed to load excuse letter.');
+    notify('Failed to load excuse letter.', 'error');
   }
 };
 
@@ -331,7 +372,7 @@ async function approveExcuseAction(excuseId, studentId, classId, dept, notificat
     const excuseSnap = await get(excuseRef);
     
     if (!excuseSnap.exists()) {
-      alert('Excuse letter not found.');
+      notify('Excuse letter not found.', 'error');
       return;
     }
     
@@ -394,11 +435,11 @@ async function approveExcuseAction(excuseId, studentId, classId, dept, notificat
     // Delete the teacher's notification
     await remove(ref(db, `notifications/${currentUser.uid}/${notificationId}`));
     
-    alert('Excuse letter approved! Student marked as Excused. ' + (!dateExists ? 'Date has been added to the attendance calendar.' : ''));
+    notify('Excuse letter approved! Student marked as Excused. ' + (!dateExists ? 'Date has been added to the attendance calendar.' : ''), 'success');
     
   } catch (error) {
     console.error('Error approving excuse letter:', error);
-    alert('Failed to approve excuse letter. Please try again.');
+    notify('Failed to approve excuse letter. Please try again.', 'error');
   }
 }
 
@@ -418,7 +459,7 @@ async function rejectExcuseAction(excuseId, notificationId, reason) {
     const excuseSnap = await get(excuseRef);
     
     if (!excuseSnap.exists()) {
-      alert('Excuse letter not found.');
+      notify('Excuse letter not found.', 'error');
       return;
     }
     
@@ -483,11 +524,11 @@ async function rejectExcuseAction(excuseId, notificationId, reason) {
     // Delete the teacher's notification
     await remove(ref(db, `notifications/${currentUser.uid}/${notificationId}`));
     
-    alert('Excuse letter rejected. Student marked as Absent. ' + (!dateExists ? 'Date has been added to the attendance calendar.' : ''));
+    notify('Excuse letter rejected. Student marked as Absent. ' + (!dateExists ? 'Date has been added to the attendance calendar.' : ''), 'success');
     
   } catch (error) {
     console.error('Error rejecting excuse letter:', error);
-    alert('Failed to reject excuse letter. Please try again.');
+    notify('Failed to reject excuse letter. Please try again.', 'error');
   }
 }
 

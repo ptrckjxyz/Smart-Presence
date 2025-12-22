@@ -15,6 +15,33 @@ const excuseLetterBtn = document.getElementById("excuseLetterBtn");
 let currentUser = null;
 let currentClassData = null;
 
+// Local notify helper: use global showToast if available, otherwise create a simple toast fallback
+function notify(message, type) {
+    if (typeof window.showToast === 'function') {
+        try { window.showToast(message, type); return; } catch (e) { console.error('notify showToast error', e); }
+    }
+    let toast = document.querySelector('.global-toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.className = 'global-toast';
+        document.body.appendChild(toast);
+        const style = document.createElement('style');
+        style.textContent = `
+            .global-toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(100px); padding: 0.9rem 1.2rem; border-radius: 10px; color: #fff; font-weight:600; z-index:20000; opacity:0; transition: all .28s ease; box-shadow: 0 10px 30px rgba(0,0,0,.25); }
+            .global-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+            .global-toast.success { background: #16a34a; }
+            .global-toast.error { background: #dc2626; }
+            .global-toast.info { background: #0ea5e9; }
+            .global-toast.default { background: #1e293b; }
+        `;
+        document.head.appendChild(style);
+    }
+    toast.textContent = message;
+    toast.className = 'global-toast show ' + (type || 'default');
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
 const joinClassModal = document.getElementById("joinClassModal");
 const classCodeInput = document.getElementById("classCodeInput");
 const cancelJoin = document.getElementById("cancelJoin");
@@ -234,15 +261,15 @@ function showExcuseLetterModal() {
         const file = fileInput.files[0];
 
         if (!date) {
-            alert("Please select a date.");
+            notify("Please select a date.", 'error');
             return;
         }
         if (!reason) {
-            alert("Please enter a reason.");
+            notify("Please enter a reason.", 'error');
             return;
         }
         if (!file) {
-            alert("Please upload a letter.");
+            notify("Please upload a letter.", 'error');
             return;
         }
 
@@ -299,7 +326,7 @@ function showExcuseLetterModal() {
                 department: currentClassData.department
             });
 
-            alert("Excuse letter submitted successfully! Awaiting teacher approval.");
+            notify("Excuse letter submitted successfully! Awaiting teacher approval.", 'success');
             modal.classList.remove("show");
             
             // Clear form
