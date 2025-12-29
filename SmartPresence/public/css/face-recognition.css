@@ -1,0 +1,736 @@
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #0f4c3a 0%, #1a5c47 100%);
+    min-height: 100vh;
+    color: #333;
+    transition: background 0.6s ease;
+}
+
+/* Dynamic Background States */
+body.scanning-active {
+    background: #FFEB3B;
+}
+
+body.face-detected {
+    background: #FFEB3B;
+}
+
+body.face-analyzing {
+    background: #FF9800;
+}
+
+body.face-verified {
+    background: #4CAF50;
+}
+
+body.face-error {
+    background: #F44336;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Header */
+.header {
+    background: white;
+    border-radius: 16px;
+    padding: 20px 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.back-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: #f0f4f8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #0f4c3a;
+}
+
+.back-btn:hover {
+    background: #0f4c3a;
+    color: white;
+    transform: translateX(-3px);
+}
+
+.header h1 {
+    font-size: 24px;
+    font-weight: 600;
+    color: #0f4c3a;
+    flex: 1;
+}
+
+.class-info {
+    background: #e8f5e9;
+    padding: 10px 20px;
+    border-radius: 10px;
+    border-left: 4px solid #0f4c3a;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.class-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: #0f4c3a;
+}
+
+.mode-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.mode-badge.teacher {
+    background: #ff6b35;
+    color: white;
+}
+
+.mode-badge.student {
+    background: #004e89;
+    color: white;
+}
+
+/* Main Content */
+.main-content {
+    background: transparent;
+    border-radius: 16px;
+    padding: 40px;
+    position: relative;
+}
+
+/* Status Message */
+.status-message {
+    margin-bottom: 20px;
+    padding: 15px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    display: none;
+    background: white;
+}
+
+.status-message.info {
+    background: white;
+    color: #1976d2;
+    border-left: 4px solid #1976d2;
+    display: block;
+}
+
+.status-message.success {
+    background: white;
+    color: #2e7d32;
+    border-left: 4px solid #2e7d32;
+    display: block;
+}
+
+.status-message.error {
+    background: white;
+    color: #c62828;
+    border-left: 4px solid #c62828;
+    display: block;
+}
+
+/* Camera Section */
+.camera-section {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.camera-container {
+    margin-bottom: 30px;
+}
+
+.camera-frame {
+    position: relative;
+    width: 400px;
+    height: 400px;
+    margin: 0 auto;
+    border-radius: 50%;
+    overflow: hidden;
+    background: #000;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.camera-frame video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transform: scaleX(-1);
+    -webkit-transform: scaleX(-1);
+}
+
+.camera-frame canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transform: scaleX(-1);
+    -webkit-transform: scaleX(-1);
+}
+
+/* Enhanced Circular Scan Guide - Snapchat Style */
+.scan-guide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.guide-circle {
+    width: 100%;
+    height: 100%;
+    border: 6px solid rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    position: relative;
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.3),
+                0 0 40px rgba(255, 255, 255, 0.5);
+    transition: all 0.3s ease;
+}
+
+/* Face Shape Outline - Human Head Shape */
+.guide-circle .face-outline {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 75%;
+    height: 75%;
+    pointer-events: none;
+    transition: all 0.3s ease;
+    z-index: 10;
+}
+
+.guide-circle .face-outline .face-path {
+    stroke: rgba(255, 255, 255, 0.98);
+    stroke-width: 6;
+    transition: stroke 0.3s ease;
+    filter: drop-shadow(0 0 25px rgba(255, 255, 255, 0.95));
+}
+
+/* Animated rotating border segments */
+.guide-circle::before,
+.guide-circle::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    top: -6px;
+    left: -6px;
+}
+
+.guide-circle::before {
+    border: 6px solid transparent;
+    border-top-color: #FFD700;
+    border-right-color: #FFD700;
+    animation: rotateBorder 2s linear infinite;
+}
+
+.guide-circle::after {
+    border: 6px solid transparent;
+    border-bottom-color: #FFA500;
+    border-left-color: #FFA500;
+    animation: rotateBorderReverse 2s linear infinite;
+}
+
+@keyframes rotateBorder {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes rotateBorderReverse {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(-360deg);
+    }
+}
+
+/* Different scanning states */
+.scan-guide.detecting .guide-circle {
+    border-color: rgba(255, 255, 255, 0.9);
+}
+
+.scan-guide.detecting .face-outline .face-path {
+    stroke: rgba(0, 229, 255, 0.95);
+    filter: drop-shadow(0 0 20px rgba(0, 229, 255, 0.8));
+}
+
+.scan-guide.detecting .guide-circle::before {
+    border-top-color: #00E5FF;
+    border-right-color: #00E5FF;
+}
+
+.scan-guide.detecting .guide-circle::after {
+    border-bottom-color: #0091EA;
+    border-left-color: #0091EA;
+}
+
+.scan-guide.analyzing .guide-circle {
+    border-color: rgba(255, 255, 255, 0.9);
+}
+
+.scan-guide.analyzing .face-outline .face-path {
+    stroke: rgba(255, 215, 0, 0.95);
+    filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.8));
+}
+
+.scan-guide.analyzing .guide-circle::before {
+    border-top-color: #FFD700;
+    border-right-color: #FFD700;
+    animation: rotateBorder 1s linear infinite;
+}
+
+.scan-guide.analyzing .guide-circle::after {
+    border-bottom-color: #FF6D00;
+    border-left-color: #FF6D00;
+    animation: rotateBorderReverse 1s linear infinite;
+}
+
+.scan-guide.verified .guide-circle {
+    border-color: rgba(76, 255, 76, 0.9);
+}
+
+.scan-guide.verified .face-outline .face-path {
+    stroke: rgba(0, 230, 118, 0.95);
+    filter: drop-shadow(0 0 20px rgba(0, 230, 118, 0.8));
+}
+
+.scan-guide.verified .guide-circle::before {
+    border-top-color: #00E676;
+    border-right-color: #00E676;
+    animation: rotateBorder 0.5s linear infinite;
+}
+
+.scan-guide.verified .guide-circle::after {
+    border-bottom-color: #00C853;
+    border-left-color: #00C853;
+    animation: rotateBorderReverse 0.5s linear infinite;
+}
+
+.scan-guide.error .guide-circle {
+    border-color: rgba(255, 82, 82, 0.9);
+}
+
+.scan-guide.error .face-outline .face-path {
+    stroke: rgba(255, 82, 82, 0.95);
+    filter: drop-shadow(0 0 20px rgba(255, 82, 82, 0.8));
+}
+
+.scan-guide.error .guide-circle::before,
+.scan-guide.error .guide-circle::after {
+    border-color: transparent;
+    animation: none;
+}
+
+/* Scanning Line Effect */
+.scan-line {
+    display: none;
+}
+
+/* Scanning State Effects */
+.camera-frame.scanning {
+    box-shadow: 0 0 60px rgba(255, 235, 59, 0.8);
+}
+
+.camera-frame.analyzing {
+    box-shadow: 0 0 60px rgba(255, 152, 0, 0.8);
+}
+
+.camera-frame.verified {
+    box-shadow: 0 0 60px rgba(76, 175, 80, 0.8);
+}
+
+.camera-frame.error {
+    box-shadow: 0 0 60px rgba(244, 67, 54, 0.8);
+}
+
+/* Enhanced Camera Instruction */
+.camera-instruction {
+    text-align: center;
+    margin-top: 30px;
+    font-size: 20px;
+    color: #333;
+    font-weight: 700;
+    padding: 20px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    min-height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.camera-instruction.warning {
+    background: white;
+    color: #FF6F00;
+}
+
+.camera-instruction.error {
+    background: white;
+    color: #D32F2F;
+}
+
+.camera-instruction.success {
+    background: white;
+    color: #388E3C;
+}
+
+/* Camera Controls */
+.camera-controls {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+/* Buttons */
+.btn {
+    padding: 14px 30px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Poppins', sans-serif;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #0f4c3a 0%, #1a5c47 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(15, 76, 58, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(15, 76, 58, 0.4);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+.btn-secondary {
+    background: white;
+    color: #0f4c3a;
+    border: 2px solid #e0e4e8;
+}
+
+.btn-secondary:hover {
+    background: #f0f4f8;
+    border-color: #d0d4d8;
+}
+
+/* Results Section */
+.results-section {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.result-card {
+    text-align: center;
+    padding: 40px;
+    border-radius: 16px;
+    background: white;
+    animation: slideUp 0.4s ease-out;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.result-card.success {
+    background: white;
+    border: 2px solid #4CAF50;
+}
+
+.result-card.error {
+    background: white;
+    border: 2px solid #F44336;
+}
+
+.result-icon {
+    margin-bottom: 20px;
+    animation: scaleIn 0.5s ease-out;
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0);
+    }
+    to {
+        transform: scale(1);
+    }
+}
+
+.result-card h2 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: #0f4c3a;
+}
+
+.student-info {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 12px;
+    margin: 20px 0;
+    text-align: left;
+}
+
+.student-info p {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #e0e0e0;
+    font-size: 15px;
+}
+
+.student-info p:last-child {
+    border-bottom: none;
+}
+
+.student-info strong {
+    color: #666;
+    font-weight: 500;
+}
+
+.student-info span {
+    color: #0f4c3a;
+    font-weight: 600;
+}
+
+.match-confidence {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 12px;
+    margin: 20px 0;
+    font-size: 14px;
+    color: #666;
+}
+
+.match-confidence strong {
+    color: #4CAF50;
+    font-size: 20px;
+}
+
+.error-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+#errorMessage {
+    font-size: 16px;
+    color: #666;
+    margin: 20px 0;
+    line-height: 1.6;
+}
+
+/* Loading Overlay */
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.95);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 16px;
+    z-index: 1000;
+}
+
+.loading-spinner {
+    width: 60px;
+    height: 60px;
+    border: 4px solid #f0f4f8;
+    border-top-color: #0f4c3a;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+#loadingText {
+    margin-top: 20px;
+    font-size: 16px;
+    font-weight: 500;
+    color: #0f4c3a;
+}
+
+/* Debug Panel */
+.debug-panel {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.9);
+    color: #00ff88;
+    padding: 15px;
+    border-radius: 10px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    max-width: 300px;
+    max-height: 400px;
+    overflow-y: auto;
+    z-index: 9999;
+}
+
+.debug-panel h3 {
+    margin-bottom: 10px;
+    color: white;
+}
+
+#debugInfo {
+    line-height: 1.6;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+    }
+
+    .header {
+        padding: 15px 20px;
+        flex-wrap: wrap;
+    }
+
+    .header h1 {
+        font-size: 18px;
+        width: 100%;
+        order: 2;
+        margin-top: 10px;
+    }
+
+    .back-btn {
+        order: 1;
+    }
+
+    .class-info {
+        order: 3;
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    .main-content {
+        padding: 25px 20px;
+    }
+
+    .camera-frame {
+        width: 320px;
+        height: 320px;
+    }
+
+    .camera-controls {
+        flex-direction: column;
+    }
+
+    .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .error-actions {
+        flex-direction: column;
+    }
+
+    .result-card {
+        padding: 30px 20px;
+    }
+
+    .result-card h2 {
+        font-size: 22px;
+    }
+
+    .camera-instruction {
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .header h1 {
+        font-size: 16px;
+    }
+
+    .camera-frame {
+        width: 280px;
+        height: 280px;
+    }
+
+    .camera-instruction {
+        font-size: 14px;
+        padding: 15px;
+    }
+
+    .btn {
+        padding: 12px 20px;
+        font-size: 14px;
+    }
+
+    .result-card h2 {
+        font-size: 20px;
+    }
+
+    .student-info p {
+        font-size: 14px;
+        flex-direction: column;
+        gap: 5px;
+    }
+}
