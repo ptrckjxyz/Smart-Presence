@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SmartPresence | Profile</title>
+  <link rel="stylesheet" href="css/profile.css" />
+  <link rel="stylesheet" href="css/dashboard.css" />
+  <link rel="shortcut icon" href="img/favicon.png" type="image/x-icon">
+</head>
+<body>
+
+  <main class="profile-layout">
+    <!-- Left Panel -->
+    <section class="left-panel">
+      <div class="profile-pic">
+        <div id="profileImage" class="default-initials"></div>
+        <label for="uploadPhoto" class="upload-label">+</label>
+        <input type="file" id="uploadPhoto" accept="image/*" hidden />
+      </div>
+
+      <h2 id="profileName">Loading...</h2>
+      <button class="verify-btn" id="verifyBtn">VERIFY YOUR ACCOUNT</button>
+
+      <div class="account-section">
+        <h3>Account Management</h3>
+        <button class="action-btn" id="editInfoBtn">Edit Information</button>
+        <button class="action-btn" id="changePassBtn">Change Password</button>
+      </div>
+
+      <button class="logout-btn" id="logoutBtn">Logout</button>
+    </section>
+
+    <!-- Right Panel -->
+    <section class="right-panel" id="rightPanel">
+      <h2 class="section-title" id="panelTitle">My Subjects</h2>
+      <div class="subject-list" id="subjectList">
+        <p class="loading">Loading your subjects...</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- Logout Confirmation Modal -->
+  <div id="logoutModal" class="modal-overlay" style="display:none;">
+    <div class="modal-box">
+      <h3>Are you sure you want to logout?</h3>
+      <div class="modal-buttons">
+        <button id="confirmLogout" class="confirm-btn">Yes</button>
+        <button id="cancelLogout" class="cancel-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ Success Modal -->
+  <div id="successModal" class="modal-overlay" style="display:none;">
+    <div class="modal-box success">
+      <h3>Success</h3>
+      <p id="successMessage">Action completed successfully.</p>
+      <div class="modal-buttons">
+        <button id="successOkBtn" class="confirm-btn">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ❌ Error Modal -->
+  <div id="errorModal" class="modal-overlay" style="display:none;">
+    <div class="modal-box error">
+      <h3>Error</h3>
+      <p id="errorMessage">Something went wrong.</p>
+      <div class="modal-buttons">
+        <button id="errorOkBtn" class="confirm-btn">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🌥️ CRITICAL: Cloudinary Upload Widget Script -->
+  <script src="https://upload-widget.cloudinary.com/global/all.js" type="text/javascript"></script>
+  
+  <script type="module" src="js/profile.js"></script>
+  <script type="module" src="js/navigation.js"></script>
+</body>
+</html>
