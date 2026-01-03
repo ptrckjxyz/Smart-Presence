@@ -7,8 +7,7 @@ let userRole = null;
 let notificationCheckInterval = null;
 let allNotifications = [];
 
-// Simple notifier wrapper: use showToast if available, otherwise fallback to alert
-// Ensure a global showToast exists (fallback) so other pages can use toast notifications
+// Simple notifier wrapper
 if (typeof window.showToast !== 'function') {
   window.showToast = function(message, type) {
     let toast = document.querySelector('.global-toast');
@@ -53,9 +52,7 @@ onAuthStateChanged(auth, (user) => {
   if (user) {
     currentUser = user;
     console.log('✅ User authenticated:', currentUser.uid);
-    console.log('📧 User email:', currentUser.email);
     detectUserRole();
-    
     cleanupOldNotificationRecords();
     setInterval(cleanupOldNotificationRecords, 24 * 60 * 60 * 1000);
   } else {
@@ -84,8 +81,6 @@ async function detectUserRole() {
 // Initialize the notification system
 function initializeNotificationSystem() {
   console.log('🚀 Initializing notification system...');
-  console.log('📍 Current user ID:', currentUser.uid);
-  console.log('📍 Notifications path:', `notifications/${currentUser.uid}`);
   loadNotifications();
   startNotificationScheduler();
   setupEventListeners();
@@ -96,22 +91,8 @@ function loadNotifications() {
   console.log('📥 Loading notifications for user:', currentUser.uid);
   const notificationsRef = ref(db, `notifications/${currentUser.uid}`);
   
-  get(notificationsRef).then(snapshot => {
-    console.log('🔍 Direct read test - exists:', snapshot.exists());
-    if (snapshot.exists()) {
-      console.log('📦 Direct read data:', snapshot.val());
-      console.log('📦 Number of notifications:', Object.keys(snapshot.val()).length);
-    } else {
-      console.log('⚠️ No data at path:', `notifications/${currentUser.uid}`);
-    }
-  }).catch(error => {
-    console.error('❌ Direct read error:', error);
-    console.error('❌ Error details:', error.code, error.message);
-  });
-  
   onValue(notificationsRef, (snapshot) => {
     console.log('📬 onValue triggered');
-    console.log('📊 Snapshot exists:', snapshot.exists());
     
     const notificationList = document.getElementById('notificationList');
     const notificationCount = document.querySelector('.notification-count');
@@ -122,14 +103,12 @@ function loadNotifications() {
     }
     
     if (!snapshot.exists()) {
-      console.log('📭 No notifications found for path:', `notifications/${currentUser.uid}`);
+      console.log('📭 No notifications found');
       notificationList.innerHTML = `
         <div class="empty-state">
           <i class="fas fa-bell-slash"></i>
           <h3>No Notifications Yet</h3>
           <p>You'll receive notifications for upcoming classes and important updates</p>
-          <small style="color: #999; margin-top: 10px; display: block;">User ID: ${currentUser.uid}</small>
-          <small style="color: #999; margin-top: 5px; display: block;">Role: ${userRole}</small>
         </div>
       `;
       if (notificationCount) {
@@ -141,11 +120,9 @@ function loadNotifications() {
     
     const notifications = [];
     snapshot.forEach(childSnap => {
-      const notifData = childSnap.val();
-      console.log('📬 Notification found:', childSnap.key, notifData);
       notifications.push({
         id: childSnap.key,
-        ...notifData
+        ...childSnap.val()
       });
     });
     
@@ -165,12 +142,10 @@ function loadNotifications() {
     renderNotifications(notifications);
   }, (error) => {
     console.error('❌ onValue error:', error);
-    console.error('Error code:', error.code);
-    console.error('Error message:', error.message);
   });
 }
 
-// Render notifications to the DOM
+// Render notifications to the DOM - FIXED VERSION WITHOUT INLINE ONCLICK
 function renderNotifications(notifications) {
   const notificationList = document.getElementById('notificationList');
   const activeFilter = document.querySelector('.filter-btn.active');
@@ -222,8 +197,8 @@ function renderNotifications(notifications) {
             ${timeAgo}
           </div>
           <div class="notification-actions">
-            ${!notif.read ? '<button class="primary" onclick="markAsRead(\'' + notif.id + '\')"><i class="fas fa-check"></i> Mark as Read</button>' : ''}
-            <button class="secondary" onclick="deleteNotification(\'' + notif.id + '\')"><i class="fas fa-trash"></i> Delete</button>
+            ${!notif.read ? '<button class="primary mark-read-btn" data-notif-id="' + notif.id + '"><i class="fas fa-check"></i> Mark as Read</button>' : ''}
+            <button class="secondary delete-btn" data-notif-id="${notif.id}"><i class="fas fa-trash"></i> Delete</button>
           </div>
         </div>
       </div>
@@ -231,11 +206,14 @@ function renderNotifications(notifications) {
   }).join('');
   
   console.log('✅ Notifications rendered successfully');
-  // Signal that notifications have been rendered so the page enter animation can finish
+  
+  // Attach event listeners after rendering
+  attachNotificationEventListeners();
+  
   if (window.markContentReady) window.markContentReady();
 }
 
-// Render excuse letter notification with special actions
+// Render excuse letter notification - FIXED VERSION WITHOUT INLINE ONCLICK
 function renderExcuseLetterNotification(notif, timeAgo, iconType, isRecent) {
   return `
     <div class="notification-item excuse-letter-notification ${notif.read ? '' : 'unread'}" data-id="${notif.id}">
@@ -250,22 +228,88 @@ function renderExcuseLetterNotification(notif, timeAgo, iconType, isRecent) {
           ${timeAgo}
         </div>
         <div class="notification-actions" style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px;">
-          <button class="primary" onclick="viewExcuseLetterFromNotification('${notif.excuseId}')" style="background: #3b82f6;">
+          <button class="primary view-excuse-btn" data-excuse-id="${notif.excuseId}" style="background: #3b82f6;">
             <i class="fas fa-eye"></i> View Letter
           </button>
-          <button class="success" onclick="approveExcuseFromNotification('${notif.excuseId}', '${notif.studentId}', '${notif.classId}', '${notif.department}', '${notif.id}')" style="background: #10b981; color: white;">
+          <button class="success approve-excuse-btn" 
+            data-excuse-id="${notif.excuseId}" 
+            data-student-id="${notif.studentId}" 
+            data-class-id="${notif.classId}" 
+            data-department="${notif.department}" 
+            data-notif-id="${notif.id}" 
+            style="background: #10b981; color: white;">
             <i class="fas fa-check"></i> Approve
           </button>
-          <button class="danger" onclick="rejectExcuseFromNotification('${notif.excuseId}', '${notif.id}')" style="background: #ef4444; color: white;">
+          <button class="danger reject-excuse-btn" 
+            data-excuse-id="${notif.excuseId}" 
+            data-notif-id="${notif.id}" 
+            style="background: #ef4444; color: white;">
             <i class="fas fa-times"></i> Reject
           </button>
-          <button class="secondary" onclick="deleteNotification('${notif.id}')">
+          <button class="secondary delete-btn" data-notif-id="${notif.id}">
             <i class="fas fa-trash"></i> Delete
           </button>
         </div>
       </div>
     </div>
   `;
+}
+
+// NEW FUNCTION: Attach event listeners to dynamically created buttons
+function attachNotificationEventListeners() {
+  // Mark as read buttons
+  document.querySelectorAll('.mark-read-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const notifId = btn.getAttribute('data-notif-id');
+      if (notifId) markAsRead(notifId);
+    });
+  });
+  
+  // Delete buttons
+  document.querySelectorAll('.delete-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const notifId = btn.getAttribute('data-notif-id');
+      if (notifId) deleteNotification(notifId);
+    });
+  });
+  
+  // View excuse letter buttons
+  document.querySelectorAll('.view-excuse-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const excuseId = btn.getAttribute('data-excuse-id');
+      if (excuseId) viewExcuseLetterFromNotification(excuseId);
+    });
+  });
+  
+  // Approve excuse buttons
+  document.querySelectorAll('.approve-excuse-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const excuseId = btn.getAttribute('data-excuse-id');
+      const studentId = btn.getAttribute('data-student-id');
+      const classId = btn.getAttribute('data-class-id');
+      const dept = btn.getAttribute('data-department');
+      const notifId = btn.getAttribute('data-notif-id');
+      if (excuseId && notifId) {
+        approveExcuseFromNotification(excuseId, studentId, classId, dept, notifId);
+      }
+    });
+  });
+  
+  // Reject excuse buttons
+  document.querySelectorAll('.reject-excuse-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const excuseId = btn.getAttribute('data-excuse-id');
+      const notifId = btn.getAttribute('data-notif-id');
+      if (excuseId && notifId) {
+        rejectExcuseFromNotification(excuseId, notifId);
+      }
+    });
+  });
 }
 
 // View excuse letter from notification
@@ -281,7 +325,6 @@ window.viewExcuseLetterFromNotification = async function(excuseId) {
     
     const excuse = excuseSnap.val();
     
-    // Create modal
     let modal = document.getElementById('excuseLetterViewModal');
     if (!modal) {
       modal = document.createElement('div');
@@ -307,7 +350,7 @@ window.viewExcuseLetterFromNotification = async function(excuseId) {
       <div style="background: white; border-radius: 16px; padding: 30px; max-width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
           <h2 style="margin: 0; color: #1f2937;">Excuse Letter</h2>
-          <button onclick="document.getElementById('excuseLetterViewModal').style.display='none'" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #6b7280;">&times;</button>
+          <button id="closeExcuseModal" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #6b7280;">&times;</button>
         </div>
         
         <div style="margin-bottom: 15px;">
@@ -333,7 +376,7 @@ window.viewExcuseLetterFromNotification = async function(excuseId) {
         <div style="margin-bottom: 15px;">
           <p style="margin: 0 0 8px 0; font-weight: 600; color: #374151;">Attached Document:</p>
           ${excuse.fileType.startsWith('image/') ? 
-            `<img src="${excuse.fileData}" style="max-width: 100%; max-height: 400px; border-radius: 8px; cursor: pointer;" onclick="window.open('${excuse.fileData}', '_blank')">` :
+            `<img src="${excuse.fileData}" style="max-width: 100%; max-height: 400px; border-radius: 8px; cursor: pointer;" id="excuseImage">` :
             `<a href="${excuse.fileData}" download="${excuse.fileName}" style="color: #3b82f6; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; padding: 10px 15px; background: #eff6ff; border-radius: 8px;">
               <i class="fas fa-file-pdf"></i> ${excuse.fileName}
             </a>`
@@ -345,6 +388,21 @@ window.viewExcuseLetterFromNotification = async function(excuseId) {
     `;
     
     modal.style.display = 'flex';
+    
+    // Add event listeners for closing
+    const closeBtn = document.getElementById('closeExcuseModal');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => {
+        modal.style.display = 'none';
+      });
+    }
+    
+    const excuseImage = document.getElementById('excuseImage');
+    if (excuseImage) {
+      excuseImage.addEventListener('click', () => {
+        window.open(excuse.fileData, '_blank');
+      });
+    }
     
     modal.addEventListener('click', (e) => {
       if (e.target === modal) {
@@ -358,16 +416,14 @@ window.viewExcuseLetterFromNotification = async function(excuseId) {
   }
 };
 
-// Approve excuse from notification
-// Pending context for modal-driven approve/reject
+// Pending context for modal-driven approve/reject/delete
 let pendingApprove = null;
 let pendingReject = null;
 let pendingDelete = null;
 
-// Core approve action (moved from original function body)
+// Core approve action
 async function approveExcuseAction(excuseId, studentId, classId, dept, notificationId) {
   try {
-    // Get excuse letter data first to get all the correct information
     const excuseRef = ref(db, `excuseLetters/${excuseId}`);
     const excuseSnap = await get(excuseRef);
     
@@ -379,9 +435,8 @@ async function approveExcuseAction(excuseId, studentId, classId, dept, notificat
     const excuseData = excuseSnap.val();
     
     console.log('📋 Excuse data:', excuseData);
-    console.log('📍 Will mark attendance at:', `attendance/${excuseData.teacherId}/${excuseData.department}/${excuseData.classId}/${excuseData.date}/${excuseData.studentId}`);
     
-    // Check if the date exists in customDates, if not add it
+    // Check if the date exists in customDates
     const customDatesRef = ref(db, `classes/${excuseData.teacherId}/${excuseData.department}/${excuseData.classId}/customDates`);
     const datesSnap = await get(customDatesRef);
     
@@ -392,12 +447,9 @@ async function approveExcuseAction(excuseId, studentId, classId, dept, notificat
     }
     
     if (!dateExists) {
-      console.log('📅 Date not found in customDates, adding:', excuseData.date);
       const newDateRef = push(customDatesRef);
       await set(newDateRef, excuseData.date);
       console.log('✅ Date added to customDates');
-    } else {
-      console.log('✅ Date already exists in customDates');
     }
     
     // Update excuse letter status
@@ -407,7 +459,7 @@ async function approveExcuseAction(excuseId, studentId, classId, dept, notificat
       teacherApprovedBy: currentUser.uid
     });
     
-    // Mark student as excused in attendance - USE TEACHER ID FROM EXCUSE DATA
+    // Mark student as excused in attendance
     const attendanceRef = ref(db, 
       `attendance/${excuseData.teacherId}/${excuseData.department}/${excuseData.classId}/${excuseData.date}/${excuseData.studentId}`
     );
@@ -418,8 +470,6 @@ async function approveExcuseAction(excuseId, studentId, classId, dept, notificat
       excuseLetterId: excuseId,
       approvedBy: currentUser.uid
     });
-    
-    console.log('✅ Attendance marked as excused');
     
     // Send notification to student
     const studentNotifRef = push(ref(db, `notifications/${excuseData.studentId}`));
@@ -435,7 +485,7 @@ async function approveExcuseAction(excuseId, studentId, classId, dept, notificat
     // Delete the teacher's notification
     await remove(ref(db, `notifications/${currentUser.uid}/${notificationId}`));
     
-    notify('Excuse letter approved! Student marked as Excused. ' + (!dateExists ? 'Date has been added to the attendance calendar.' : ''), 'success');
+    notify('Excuse letter approved! Student marked as Excused.', 'success');
     
   } catch (error) {
     console.error('Error approving excuse letter:', error);
@@ -443,18 +493,16 @@ async function approveExcuseAction(excuseId, studentId, classId, dept, notificat
   }
 }
 
-// Show confirmation modal instead of native confirm
+// Show confirmation modal
 window.approveExcuseFromNotification = function(excuseId, studentId, classId, dept, notificationId) {
   pendingApprove = {excuseId, studentId, classId, dept, notificationId};
   const modal = document.getElementById('approveExcuseModal');
   if (modal) modal.style.display = 'flex';
 };
 
-// Reject excuse from notification
-// Core reject action (moved from original function body)
+// Core reject action
 async function rejectExcuseAction(excuseId, notificationId, reason) {
   try {
-    // Get excuse letter data
     const excuseRef = ref(db, `excuseLetters/${excuseId}`);
     const excuseSnap = await get(excuseRef);
     
@@ -465,10 +513,7 @@ async function rejectExcuseAction(excuseId, notificationId, reason) {
     
     const excuseData = excuseSnap.val();
     
-    console.log('📋 Excuse data:', excuseData);
-    console.log('📍 Will mark attendance at:', `attendance/${excuseData.teacherId}/${excuseData.department}/${excuseData.classId}/${excuseData.date}/${excuseData.studentId}`);
-    
-    // Check if the date exists in customDates, if not add it
+    // Check if the date exists in customDates
     const customDatesRef = ref(db, `classes/${excuseData.teacherId}/${excuseData.department}/${excuseData.classId}/customDates`);
     const datesSnap = await get(customDatesRef);
     
@@ -479,12 +524,9 @@ async function rejectExcuseAction(excuseId, notificationId, reason) {
     }
     
     if (!dateExists) {
-      console.log('📅 Date not found in customDates, adding:', excuseData.date);
       const newDateRef = push(customDatesRef);
       await set(newDateRef, excuseData.date);
       console.log('✅ Date added to customDates');
-    } else {
-      console.log('✅ Date already exists in customDates');
     }
     
     // Update excuse letter status
@@ -495,7 +537,7 @@ async function rejectExcuseAction(excuseId, notificationId, reason) {
       rejectedBy: currentUser.uid
     });
     
-    // Mark student as ABSENT when excuse letter is rejected - USE TEACHER ID FROM EXCUSE DATA
+    // Mark student as ABSENT
     const attendanceRef = ref(db, 
       `attendance/${excuseData.teacherId}/${excuseData.department}/${excuseData.classId}/${excuseData.date}/${excuseData.studentId}`
     );
@@ -508,13 +550,11 @@ async function rejectExcuseAction(excuseId, notificationId, reason) {
       rejectionReason: reason || 'No reason provided'
     });
     
-    console.log('✅ Attendance marked as absent');
-    
     // Send notification to student
     const studentNotifRef = push(ref(db, `notifications/${excuseData.studentId}`));
     await set(studentNotifRef, {
       title: 'Excuse Letter Rejected',
-      message: `Your excuse letter for ${excuseData.date} has been rejected and you have been marked as Absent. Reason: ${reason || 'No reason provided'}`,
+      message: `Your excuse letter for ${excuseData.date} has been rejected. Reason: ${reason || 'No reason provided'}`,
       type: 'excuse_rejected',
       timestamp: Date.now(),
       read: false,
@@ -524,7 +564,7 @@ async function rejectExcuseAction(excuseId, notificationId, reason) {
     // Delete the teacher's notification
     await remove(ref(db, `notifications/${currentUser.uid}/${notificationId}`));
     
-    notify('Excuse letter rejected. Student marked as Absent. ' + (!dateExists ? 'Date has been added to the attendance calendar.' : ''), 'success');
+    notify('Excuse letter rejected. Student marked as Absent.', 'success');
     
   } catch (error) {
     console.error('Error rejecting excuse letter:', error);
@@ -532,7 +572,7 @@ async function rejectExcuseAction(excuseId, notificationId, reason) {
   }
 }
 
-// Show reject modal with reason input instead of prompt
+// Show reject modal
 window.rejectExcuseFromNotification = function(excuseId, notificationId) {
   pendingReject = {excuseId, notificationId};
   const modal = document.getElementById('rejectExcuseModal');
@@ -559,7 +599,7 @@ function getNotificationIcon(type) {
   return icons[type] || 'fas fa-bell';
 }
 
-// Wire up modal confirm/cancel buttons for approve/reject
+// Wire up modal confirm/cancel buttons
 document.addEventListener('DOMContentLoaded', () => {
   const approveModal = document.getElementById('approveExcuseModal');
   const approveConfirm = document.getElementById('approveExcuseConfirm');
@@ -587,8 +627,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!pendingApprove) return;
     const ctx = pendingApprove;
     pendingApprove = null;
-    const modal = document.getElementById('approveExcuseModal');
-    if (modal) modal.style.display = 'none';
+    if (approveModal) approveModal.style.display = 'none';
     await approveExcuseAction(ctx.excuseId, ctx.studentId, ctx.classId, ctx.dept, ctx.notificationId);
   });
 
@@ -597,8 +636,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const ctx = pendingReject;
     pendingReject = null;
     const reason = rejectInput ? rejectInput.value.trim() : '';
-    const modal = document.getElementById('rejectExcuseModal');
-    if (modal) modal.style.display = 'none';
+    if (rejectModal) rejectModal.style.display = 'none';
     await rejectExcuseAction(ctx.excuseId, ctx.notificationId, reason);
   });
 
@@ -606,16 +644,15 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!pendingDelete) return;
     const ctx = pendingDelete;
     pendingDelete = null;
-    const modal = document.getElementById('deleteNotificationModal');
-    if (modal) modal.style.display = 'none';
+    if (deleteModal) deleteModal.style.display = 'none';
     console.log('🗑️ Deleting notification:', ctx.notificationId);
     try {
       await remove(ref(db, `notifications/${currentUser.uid}/${ctx.notificationId}`));
       console.log('✅ Deleted successfully');
-      // Optionally re-render notifications or rely on realtime listener
-      loadNotifications();
+      notify('Notification deleted', 'success');
     } catch (error) {
       console.error('❌ Error deleting notification:', error);
+      notify('Failed to delete notification', 'error');
     }
   });
 
@@ -642,25 +679,23 @@ function getTimeAgo(timestamp) {
 }
 
 // Mark notification as read
-window.markAsRead = async function(notificationId) {
+function markAsRead(notificationId) {
   console.log('✅ Marking as read:', notificationId);
-  try {
-    await update(ref(db, `notifications/${currentUser.uid}/${notificationId}`), {
-      read: true
-    });
+  update(ref(db, `notifications/${currentUser.uid}/${notificationId}`), {
+    read: true
+  }).then(() => {
     console.log('✅ Marked as read successfully');
-  } catch (error) {
+  }).catch(error => {
     console.error('❌ Error marking as read:', error);
-  }
-};
+  });
+}
 
 // Delete notification
-window.deleteNotification = function(notificationId) {
-  // show modal and store context
+function deleteNotification(notificationId) {
   pendingDelete = { notificationId };
   const modal = document.getElementById('deleteNotificationModal');
   if (modal) modal.style.display = 'flex';
-};
+}
 
 // Setup event listeners
 function setupEventListeners() {
@@ -678,6 +713,7 @@ function setupEventListeners() {
         });
         await update(notificationsRef, updates);
         console.log('✅ All marked as read');
+        notify('All notifications marked as read', 'success');
       }
     });
   }
@@ -705,13 +741,11 @@ function startNotificationScheduler() {
   }, 60000);
 }
 
-// Check and schedule notifications for upcoming classes
+// Check and schedule notifications
 async function checkAndScheduleNotifications() {
   const now = new Date();
   const currentDay = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][now.getDay()];
   const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-  
-  console.log(`📅 Checking schedules - Day: ${currentDay}, Time: ${currentTime}`);
   
   if (userRole === 'teacher') {
     await checkTeacherClasses(currentDay, currentTime, now);
@@ -722,33 +756,18 @@ async function checkAndScheduleNotifications() {
 
 // Check teacher's classes
 async function checkTeacherClasses(currentDay, currentTime, now) {
-  console.log('👨‍🏫 Checking teacher classes...');
   const classesRef = ref(db, `classes/${currentUser.uid}`);
   const snapshot = await get(classesRef);
   
-  if (!snapshot.exists()) {
-    console.log('📚 No classes found for teacher');
-    return;
-  }
+  if (!snapshot.exists()) return;
   
   snapshot.forEach(deptSnap => {
     deptSnap.forEach(classSnap => {
       const classData = classSnap.val();
-      const classId = classSnap.key;
-      const department = deptSnap.key;
-      
       if (classData.schedule) {
         Object.values(classData.schedule).forEach(schedule => {
           if (schedule.day === currentDay) {
-            checkScheduleAndNotify(
-              schedule,
-              classData,
-              classId,
-              department,
-              currentTime,
-              now,
-              'teacher'
-            );
+            checkScheduleAndNotify(schedule, classData, classSnap.key, deptSnap.key, currentTime, now, 'teacher');
           }
         });
       }
@@ -758,39 +777,21 @@ async function checkTeacherClasses(currentDay, currentTime, now) {
 
 // Check student's classes
 async function checkStudentClasses(currentDay, currentTime, now) {
-  console.log('👨‍🎓 Checking student classes...');
   const classesRef = ref(db, `classes`);
   const snapshot = await get(classesRef);
   
   if (!snapshot.exists()) return;
   
   snapshot.forEach(teacherSnap => {
-    const teacherId = teacherSnap.key;
-    
     teacherSnap.forEach(deptSnap => {
-      const department = deptSnap.key;
-      
       deptSnap.forEach(classSnap => {
         const classData = classSnap.val();
-        const classId = classSnap.key;
-        
-        if (classData.students && classData.students[currentUser.uid]) {
-          if (classData.schedule) {
-            Object.values(classData.schedule).forEach(schedule => {
-              if (schedule.day === currentDay) {
-                checkScheduleAndNotify(
-                  schedule,
-                  classData,
-                  classId,
-                  department,
-                  currentTime,
-                  now,
-                  'student',
-                  teacherId
-                );
-              }
-            });
-          }
+        if (classData.students && classData.students[currentUser.uid] && classData.schedule) {
+          Object.values(classData.schedule).forEach(schedule => {
+            if (schedule.day === currentDay) {
+              checkScheduleAndNotify(schedule, classData, classSnap.key, deptSnap.key, currentTime, now, 'student', teacherSnap.key);
+            }
+          });
         }
       });
     });
@@ -818,20 +819,8 @@ async function checkScheduleAndNotify(schedule, classData, classId, department, 
       const sentSnap = await get(sentRef);
       
       if (!sentSnap.exists()) {
-        await sendClassNotification(
-          classData,
-          schedule,
-          notif.type,
-          role,
-          classId,
-          department,
-          teacherId
-        );
-        
-        await set(sentRef, {
-          sent: true,
-          timestamp: Date.now()
-        });
+        await sendClassNotification(classData, schedule, notif.type, role, classId, department, teacherId);
+        await set(sentRef, { sent: true, timestamp: Date.now() });
       }
     }
   }
@@ -858,34 +847,23 @@ async function sendClassNotification(classData, schedule, timeBeforeClass, role,
     type = 'class_starting';
   }
   
-  if (role === 'teacher') {
-    message += ` | Department: ${department}`;
-  }
+  if (role === 'teacher') message += ` | Department: ${department}`;
   
   const notificationRef = push(ref(db, `notifications/${currentUser.uid}`));
   
   try {
     await set(notificationRef, {
-      title: title,
-      message: message,
-      type: type,
-      classId: classId,
-      department: department,
-      teacherId: teacherId,
-      schedule: scheduleTime,
-      timestamp: Date.now(),
-      read: false
+      title, message, type, classId, department, teacherId, schedule: scheduleTime,
+      timestamp: Date.now(), read: false
     });
-    
-    console.log(`✅ Notification sent: ${title} for ${className}`);
+    console.log(`✅ Notification sent: ${title}`);
   } catch (error) {
     console.error(`❌ Error sending notification:`, error);
   }
 }
 
-// Clean up old notification_sent records
+// Clean up old notification records
 async function cleanupOldNotificationRecords() {
-  console.log('🧹 Running cleanup of old notification records');
   const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
   const sentRef = ref(db, `notification_sent/${currentUser.uid}`);
   const snapshot = await get(sentRef);
@@ -893,15 +871,13 @@ async function cleanupOldNotificationRecords() {
   if (snapshot.exists()) {
     const updates = {};
     snapshot.forEach(childSnap => {
-      const data = childSnap.val();
-      if (data.timestamp < sevenDaysAgo) {
+      if (childSnap.val().timestamp < sevenDaysAgo) {
         updates[childSnap.key] = null;
       }
     });
     
     if (Object.keys(updates).length > 0) {
       await update(sentRef, updates);
-      console.log(`🧹 Cleaned up ${Object.keys(updates).length} old notification records`);
     }
   }
 }
