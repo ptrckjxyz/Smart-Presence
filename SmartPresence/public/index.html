@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CvSU Smart Presence | Login</title>
+  <link rel="stylesheet" href="css/auth.css">
+  <link rel="shortcut icon" href="img/favicon.png" type="image/x-icon">
+</head>
+<body>
+
+  <div class="background"></div>
+
+  <div class="glass-container">
+    <div class="logo-section">
+      <img src="img/cvsu-logo.png" alt="CvSU Logo" class="logo">
+      <h1>Smart Presence</h1>
+      <p class="subtitle">Cavite State University - Naic</p>
+    </div>
+
+    <div class="login-section">
+      <h2>Login</h2>
+      <form id="loginForm">
+        <input type="text" id="idNumber" placeholder="ID Number" inputmode="numeric" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <button type="submit" id="loginBtn">Login</button>
+      </form>
+      <p class="register-link">Don’t have an account? <a href="register.html">Register</a></p>
+    </div>
+  </div>
+
+  <div id="errorModal" class="modal">
+  <div class="modal-content error">
+    <h2>Login Failed</h2>
+    <p id="errorMessage">Something went wrong. Please try again.</p>
+    <button id="closeErrorBtn">Try Again</button>
+  </div>
+</div>
+
+
+  <script type="module" src="js/auth.js"></script>
+</body>
+</html>
