@@ -13,8 +13,8 @@ body {
 
 /* Header */
 .header {
-  background: white;
-  color: #1a1a1a;
+  background: #f5f5f5;
+  color: green;
   padding: 20px;
   display: flex;
   align-items: center;
@@ -23,8 +23,8 @@ body {
 }
 
 .back-btn {
-  background: #f5f5f5;
-  border: 1px solid #e0e0e0;
+  background: rgba(253, 184, 19, 0.3);
+  border: 2px solid rgba(253, 184, 19, 0.5);
   width: 40px;
   height: 40px;
   border-radius: 8px;
@@ -36,14 +36,19 @@ body {
 }
 
 .back-btn:hover {
+  background: rgba(253, 184, 19, 0.4);
   transform: scale(1.05);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 8px rgba(253, 184, 19, 0.3);
+}
+
+.back-btn svg {
+  stroke: #FDB813;
 }
 
 .page-title {
   font-size: 20px;
   font-weight: 600;
-  color: #1a1a1a;
+  color: #e0e0e0;
 }
 
 /* Main Container */
@@ -55,22 +60,22 @@ body {
 
 /* Class Info Card */
 .class-info-card {
-  background: white;
+  background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
   padding: 24px;
   border-radius: 12px;
   margin-bottom: 32px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.25);
 }
 
 .class-header h3 {
-  color: #1a1a1a;
+  color: white;
   font-size: 22px;
   font-weight: 700;
   margin-bottom: 6px;
 }
 
 .class-header .schedule {
-  color: #666;
+  color: white;
   font-size: 14px;
   font-weight: 500;
 }
@@ -80,13 +85,13 @@ body {
   background: white;
   padding: 32px;
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 }
 
 /* Upload Box */
 .upload-box {
-  background: #fafafa;
-  border: 3px dashed #d0d0d0;
+  background: #FFFBEA;
+  border: 3px dashed #FDB813;
   border-radius: 16px;
   padding: 80px 40px;
   text-align: center;
@@ -95,18 +100,24 @@ body {
 }
 
 .upload-box:hover {
-  background: #f5f5f5;
-  border-color: #006633;
+  background: #FFF8DC;
+  border-color: #FF8C00;
+  box-shadow: 0 6px 20px rgba(253, 184, 19, 0.3);
 }
 
 .upload-box.dragover {
-  background: #f0f9f5;
+  background: #E8F5E9;
   border-color: #006633;
   transform: scale(1.02);
+  box-shadow: 0 6px 20px rgba(0, 102, 51, 0.3);
 }
 
 .upload-box svg {
   margin-bottom: 20px;
+}
+
+.upload-box svg path {
+  stroke: #006633;
 }
 
 .upload-box p {
@@ -118,7 +129,7 @@ body {
 
 .upload-box span {
   font-size: 14px;
-  color: #888;
+  color: #666;
 }
 
 /* Preview Container */
@@ -132,6 +143,7 @@ body {
   border-radius: 12px;
   margin-bottom: 24px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 3px solid #FDB813;
 }
 
 .preview-controls {
@@ -173,13 +185,15 @@ body {
 }
 
 .secondary-btn {
-  background: white;
-  color: #006633;
-  border: 2px solid #006633;
+  background: linear-gradient(135deg, #FF8C00 0%, #FDB813 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(253, 184, 19, 0.3);
 }
 
 .secondary-btn:hover {
-  background: #f0f9f5;
+  background: linear-gradient(135deg, #FF7700 0%, #FF8C00 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(255, 140, 0, 0.4);
 }
 
 /* Status Message */
@@ -209,27 +223,27 @@ body {
 }
 
 .status-message.success {
-  background: #d4edda;
-  color: #155724;
-  border: 2px solid #c3e6cb;
+  background: linear-gradient(135deg, #C8E6C9 0%, #A5D6A7 100%);
+  color: #1B5E20;
+  border: 2px solid #66BB6A;
 }
 
 .status-message.error {
-  background: #f8d7da;
-  color: #721c24;
-  border: 2px solid #f5c6cb;
+  background: linear-gradient(135deg, #FFCCBC 0%, #FFAB91 100%);
+  color: #BF360C;
+  border: 2px solid #FF7043;
 }
 
 .status-message.info {
-  background: #d1ecf1;
-  color: #0c5460;
-  border: 2px solid #bee5eb;
+  background: linear-gradient(135deg, #BBDEFB 0%, #90CAF9 100%);
+  color: #0D47A1;
+  border: 2px solid #42A5F5;
 }
 
 .status-message.warning {
-  background: #fff3cd;
-  color: #856404;
-  border: 2px solid #ffeaa7;
+  background: linear-gradient(135deg, #FFF9C4 0%, #FFF59D 100%);
+  color: #F57F17;
+  border: 2px solid #FFEB3B;
 }
 
 /* Loading Overlay */
@@ -239,7 +253,7 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 102, 51, 0.95);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -250,8 +264,8 @@ body {
 .spinner {
   width: 60px;
   height: 60px;
-  border: 5px solid rgba(255, 255, 255, 0.3);
-  border-top-color: white;
+  border: 5px solid rgba(253, 184, 19, 0.3);
+  border-top-color: #FDB813;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
