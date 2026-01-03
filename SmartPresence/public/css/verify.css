@@ -1,0 +1,615 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+:root {
+  --green: #006633;
+  --dark-green: #004d26;
+  --bg: linear-gradient(135deg, #0f4c3a 0%, #1a5c47 100%);
+  --white: #fff;
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background: var(--bg);
+  margin: 0;
+  padding: 0;
+  color: #333;
+  min-height: 100vh;
+  transition: background 0.6s ease;
+}
+
+/* Dynamic Background States */
+body.scanning-active {
+  background: #FFEB3B;
+}
+
+body.face-detected {
+  background: #FFEB3B;
+}
+
+body.face-analyzing {
+  background: #FF9800;
+}
+
+body.face-verified {
+  background: #4CAF50;
+}
+
+body.face-error {
+  background: #F44336;
+}
+
+/* Main container */
+.verify-container {
+  max-width: 600px;
+  background: var(--white);
+  margin: 60px auto;
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.verify-container h1 {
+  color: var(--green);
+  text-align: center;
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.subtitle {
+  text-align: center;
+  color: #666;
+  margin-bottom: 30px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+label {
+  font-weight: 600;
+  display: block;
+  margin-bottom: 8px;
+  color: #333;
+  font-size: 14px;
+}
+
+/* Inputs */
+input[type="text"],
+input[type="email"],
+input[type="number"],
+input[type="file"] {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: 'Poppins', sans-serif;
+  transition: border 0.3s ease;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="number"]:focus {
+  outline: none;
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(0, 102, 51, 0.1);
+}
+
+/* Inline errors */
+.inline-error {
+  color: #d32f2f;
+  font-size: 0.85rem;
+  margin-top: 4px;
+  display: block;
+}
+
+/* Buttons */
+.capture-btn,
+.submit-btn,
+#nextStepBtn {
+  background: linear-gradient(135deg, var(--green) 0%, var(--dark-green) 100%);
+  color: white;
+  border: none;
+  padding: 14px 24px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  font-family: 'Poppins', sans-serif;
+  box-shadow: 0 4px 15px rgba(0, 102, 51, 0.3);
+}
+
+.capture-btn:hover,
+.submit-btn:hover,
+#nextStepBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 102, 51, 0.4);
+}
+
+.capture-btn:active,
+.submit-btn:active,
+#nextStepBtn:active {
+  transform: translateY(0);
+}
+
+.submit-btn {
+  width: 100%;
+  margin-top: 25px;
+}
+
+#nextStepBtn {
+  width: 100%;
+}
+
+/* Status text */
+.status-message,
+#statusMessage {
+  text-align: center;
+  margin-top: 20px;
+  font-weight: 600;
+  font-size: 16px;
+  padding: 15px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #e8f5e9 0%, #f1f8f4 100%);
+  border-left: 4px solid #00ff88;
+  transition: all 0.3s ease;
+}
+
+/* ================================
+   🎥 ENHANCED CAMERA UI (MATCHING FACE-RECOGNITION.HTML)
+   ================================ */
+.camera-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 0;
+}
+
+/* Circle camera view */
+.camera-frame {
+  position: relative;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #000;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  transition: box-shadow 0.5s ease;
+  margin: 0 auto;
+}
+
+.camera-frame.scanning {
+  box-shadow: 0 0 60px rgba(255, 235, 59, 0.8);
+}
+
+.camera-frame.analyzing {
+  box-shadow: 0 0 60px rgba(255, 152, 0, 0.8);
+}
+
+.camera-frame.verified {
+  box-shadow: 0 0 60px rgba(76, 175, 80, 0.8);
+}
+
+.camera-frame.error {
+  box-shadow: 0 0 60px rgba(244, 67, 54, 0.8);
+}
+
+/* Camera feed inside circular frame - MIRRORED */
+#camera {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transform: scaleX(-1);
+  -webkit-transform: scaleX(-1);
+}
+
+#overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform: scaleX(-1);
+  -webkit-transform: scaleX(-1);
+}
+
+/* Enhanced Circular Scan Guide - Snapchat Style */
+.scan-guide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.guide-circle {
+  width: 100%;
+  height: 100%;
+  border: 6px solid rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  position: relative;
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.3),
+              0 0 40px rgba(255, 255, 255, 0.5);
+  transition: all 0.3s ease;
+}
+
+/* Face Shape Outline - Human Head Shape */
+.guide-circle .face-outline {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 75%;
+  height: 75%;
+  pointer-events: none;
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.guide-circle .face-outline .face-path {
+  stroke: rgba(255, 255, 255, 0.98);
+  stroke-width: 6;
+  transition: stroke 0.3s ease;
+  filter: drop-shadow(0 0 25px rgba(255, 255, 255, 0.95));
+}
+
+/* Animated rotating border segments */
+.guide-circle::before,
+.guide-circle::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  top: -6px;
+  left: -6px;
+}
+
+.guide-circle::before {
+  border: 6px solid transparent;
+  border-top-color: #FFD700;
+  border-right-color: #FFD700;
+  animation: rotateBorder 2s linear infinite;
+}
+
+.guide-circle::after {
+  border: 6px solid transparent;
+  border-bottom-color: #FFA500;
+  border-left-color: #FFA500;
+  animation: rotateBorderReverse 2s linear infinite;
+}
+
+@keyframes rotateBorder {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes rotateBorderReverse {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(-360deg);
+  }
+}
+
+/* Different scanning states */
+.scan-guide.detecting .guide-circle {
+  border-color: rgba(255, 255, 255, 0.9);
+}
+
+.scan-guide.detecting .face-outline .face-path {
+  stroke: rgba(0, 229, 255, 0.95);
+  filter: drop-shadow(0 0 20px rgba(0, 229, 255, 0.8));
+}
+
+.scan-guide.detecting .guide-circle::before {
+  border-top-color: #00E5FF;
+  border-right-color: #00E5FF;
+}
+
+.scan-guide.detecting .guide-circle::after {
+  border-bottom-color: #0091EA;
+  border-left-color: #0091EA;
+}
+
+.scan-guide.analyzing .guide-circle {
+  border-color: rgba(255, 255, 255, 0.9);
+}
+
+.scan-guide.analyzing .face-outline .face-path {
+  stroke: rgba(255, 215, 0, 0.95);
+  filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.8));
+}
+
+.scan-guide.analyzing .guide-circle::before {
+  border-top-color: #FFD700;
+  border-right-color: #FFD700;
+  animation: rotateBorder 1s linear infinite;
+}
+
+.scan-guide.analyzing .guide-circle::after {
+  border-bottom-color: #FF6D00;
+  border-left-color: #FF6D00;
+  animation: rotateBorderReverse 1s linear infinite;
+}
+
+.scan-guide.verified .guide-circle {
+  border-color: rgba(76, 255, 76, 0.9);
+}
+
+.scan-guide.verified .face-outline .face-path {
+  stroke: rgba(0, 230, 118, 0.95);
+  filter: drop-shadow(0 0 20px rgba(0, 230, 118, 0.8));
+}
+
+.scan-guide.verified .guide-circle::before {
+  border-top-color: #00E676;
+  border-right-color: #00E676;
+  animation: rotateBorder 0.5s linear infinite;
+}
+
+.scan-guide.verified .guide-circle::after {
+  border-bottom-color: #00C853;
+  border-left-color: #00C853;
+  animation: rotateBorderReverse 0.5s linear infinite;
+}
+
+.scan-guide.error .guide-circle {
+  border-color: rgba(255, 82, 82, 0.9);
+}
+
+.scan-guide.error .face-outline .face-path {
+  stroke: rgba(255, 82, 82, 0.95);
+  filter: drop-shadow(0 0 20px rgba(255, 82, 82, 0.8));
+}
+
+.scan-guide.error .guide-circle::before,
+.scan-guide.error .guide-circle::after {
+  border-color: transparent;
+  animation: none;
+}
+
+/* Enhanced Camera Instruction */
+.camera-instruction {
+  text-align: center;
+  margin-top: 30px;
+  font-size: 20px;
+  color: #333;
+  font-weight: 700;
+  padding: 20px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  min-height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.camera-instruction.warning {
+  background: white;
+  color: #FF6F00;
+}
+
+.camera-instruction.error {
+  background: white;
+  color: #D32F2F;
+}
+
+.camera-instruction.success {
+  background: white;
+  color: #388E3C;
+}
+
+/* Preview container */
+#previewContainer {
+  margin-top: 30px;
+}
+
+#previewContainer h3 {
+  color: var(--green);
+  margin-bottom: 15px;
+  font-size: 18px;
+}
+
+#previewContainer img {
+  border-radius: 50%;
+  width: 250px;
+  height: 250px;
+  object-fit: cover;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  border: 4px solid #00ff88;
+}
+
+#previewContainer button {
+  background: var(--green);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  margin: 5px;
+  cursor: pointer;
+  font-weight: 600;
+  font-family: 'Poppins', sans-serif;
+  transition: all 0.3s ease;
+}
+
+#previewContainer button:hover {
+  background: var(--dark-green);
+  transform: translateY(-2px);
+}
+
+/* Modal Base */
+#confirmationModal {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  opacity: 0;
+  transform: scale(0.95);
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+#confirmationModal.show {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: all;
+}
+
+/* Blurred background */
+#confirmationModal .modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(6px);
+}
+
+/* Modal card */
+#confirmationModal .modal-content {
+  position: relative;
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 2.5rem;
+  max-width: 450px;
+  text-align: center;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+  animation: fadeUp 0.4s ease;
+  z-index: 2;
+}
+
+#confirmationModal h2 {
+  font-size: 1.5rem;
+  color: #222;
+  margin-bottom: 15px;
+  font-weight: 700;
+}
+
+#confirmationModal p {
+  font-size: 1rem;
+  color: #555;
+  margin-bottom: 25px;
+  line-height: 1.6;
+}
+
+/* Modal buttons */
+.modal-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.modal-btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.25s ease;
+  font-family: 'Poppins', sans-serif;
+  font-size: 15px;
+}
+
+.modal-btn.cancel {
+  background: #e0e0e0;
+  color: #333;
+}
+
+.modal-btn.cancel:hover {
+  background: #bdbdbd;
+  transform: translateY(-2px);
+}
+
+.modal-btn.proceed {
+  background: linear-gradient(135deg, #00c46b 0%, #00a55a 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(0, 196, 107, 0.4);
+}
+
+.modal-btn.proceed:hover {
+  background: linear-gradient(135deg, #00a55a 0%, #008f4a 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 196, 107, 0.5);
+}
+
+@keyframes fadeUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .verify-container {
+    margin: 30px 20px;
+    padding: 30px 25px;
+  }
+
+  .camera-frame {
+    width: 320px;
+    height: 320px;
+  }
+
+  #previewContainer img {
+    width: 200px;
+    height: 200px;
+  }
+
+  #confirmationModal .modal-content {
+    max-width: 90%;
+    padding: 2rem;
+  }
+
+  .modal-buttons {
+    flex-direction: column;
+  }
+
+  .modal-btn {
+    width: 100%;
+  }
+
+  .camera-instruction {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .verify-container h1 {
+    font-size: 24px;
+  }
+
+  .camera-frame {
+    width: 280px;
+    height: 280px;
+  }
+
+  .camera-instruction {
+    font-size: 14px;
+    padding: 15px;
+  }
+}

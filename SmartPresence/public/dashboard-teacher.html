@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SmartPresence | Teacher Dashboard</title>
+  <link rel="stylesheet" href="css/dashboard.css" />
+  <link rel="shortcut icon" href="img/favicon.png" type="image/x-icon">
+  <style>
+    .metric-icon svg {
+      width: 24px;
+      height: 24px;
+    }
+    .logs-header h2 svg,
+    .chart-container h2 svg,
+    .stats-container h2 svg {
+      width: 20px;
+      height: 20px;
+      vertical-align: middle;
+      margin-right: 4px;
+    }
+  </style>
+</head>
+<body>
+  <!-- ======= MAIN CONTENT ======= -->
+  <main class="content">
+    <!-- DASHBOARD SECTION -->
+    <section id="dashboard" class="page visible">
+      <!-- TOP METRICS CARDS -->
+      <div class="dashboard-header">
+        <h1>Dashboard</h1>
+        <p class="subtitle">Welcome back! Here's your attendance overview.</p>
+      </div>
+
+      <div class="metrics-grid">
+        <article class="metric-card accent-yellow">
+          <div class="metric-header">
+            <h3>Total Number of Students</h3>
+            <span class="metric-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+            </span>
+          </div>
+          <div class="metric-value" id="totalStudents">—</div>
+        </article>
+
+        <article class="metric-card accent-blue">
+          <div class="metric-header">
+            <h3>Total Subjects</h3>
+            <span class="metric-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+              </svg>
+            </span>
+          </div>
+          <div class="metric-value" id="totalSubjects">—</div>
+        </article>
+
+        <article class="metric-card accent-purple">
+          <div class="metric-header">
+            <h3>Schedules</h3>
+            <span class="metric-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+            </span>
+          </div>
+          <div class="metric-value" id="totalSchedules">—</div>
+        </article>
+
+        <article class="metric-card accent-orange">
+          <div class="metric-header">
+            <h3>Average Attendance</h3>
+            <span class="metric-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="20" x2="12" y2="10"></line>
+                <line x1="18" y1="20" x2="18" y2="4"></line>
+                <line x1="6" y1="20" x2="6" y2="16"></line>
+              </svg>
+            </span>
+          </div>
+          <div class="metric-value" id="avgAttendance">—</div>
+        </article>
+      </div>
+
+      <!-- CHARTS & ANALYTICS SECTION -->
+      <div class="analytics-section-wrapper">
+        <div class="chart-container">
+          <h2>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="20" x2="18" y2="10"></line>
+              <line x1="12" y1="20" x2="12" y2="4"></line>
+              <line x1="6" y1="20" x2="6" y2="14"></line>
+            </svg>
+            Attendance Analytics
+          </h2>
+          <div class="analytics-card">
+            <canvas id="attendanceChart"></canvas>
+          </div>
+        </div>
+
+        <div class="stats-container">
+          <h2>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="20" x2="12" y2="10"></line>
+              <line x1="18" y1="20" x2="18" y2="4"></line>
+              <line x1="6" y1="20" x2="6" y2="16"></line>
+            </svg>
+            Attendance Overview
+          </h2>
+          <div class="analytics-summary">
+            <div class="stat-item">
+              <span class="stat-label">Weekly Average</span>
+              <span class="stat-value" id="weeklyAverage">—</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Most Active Class</span>
+              <span class="stat-value" id="activeClass">—</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Least Attendance</span>
+              <span class="stat-value" id="leastClass">—</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Perfect Attendance</span>
+              <span class="stat-value" id="perfectStudents">—</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RECENT LOGS TABLE -->
+      <section class="logs-section">
+        <div class="logs-header">
+          <h2>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            Recent Attendance Logs
+          </h2>
+          <button id="viewAllLogsBtn" class="view-all-btn">View All Logs</button>
+        </div>
+        <table class="logs-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Subject</th>
+              <th>Present</th>
+              <th>Absent</th>
+              <th>Late</th>
+            </tr>
+          </thead>
+          <tbody id="logsTableBody">
+            <!-- Data dynamically loaded -->
+          </tbody>
+        </table>
+      </section>
+    </section>
+
+    <!-- ALL LOGS MODAL -->
+    <div id="allLogsModal" class="logs-modal">
+      <div class="logs-modal-content">
+        <div class="logs-modal-header">
+          <h2>All Attendance Logs</h2>
+          <button class="logs-modal-close" id="closeLogsModal">&times;</button>
+        </div>
+        <div class="logs-modal-body">
+          <table class="logs-modal-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Subject</th>
+                <th>Present</th>
+                <th>Absent</th>
+                <th>Late</th>
+              </tr>
+            </thead>
+            <tbody id="allLogsTableBody">
+              <!-- All logs dynamically loaded -->
+            </tbody>
+          </table>
+        </div>
+        <div class="modal-pagination">
+          <button id="prevLogsBtn" class="pagination-btn">← Previous</button>
+          <span id="logsPageInfo" class="page-info">Page 1 of 1</span>
+          <button id="nextLogsBtn" class="pagination-btn">Next →</button>
+        </div>
+      </div>
+    </div>
+
+  <!-- ======= SCRIPTS ======= -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script type="module" src="js/dashboard-teacher.js"></script>
+  <script type="module" src="js/navigation.js"></script>
+
+</body>
+</html>

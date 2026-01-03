@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SmartPresence | Student Dashboard</title>
+  <link rel="shortcut icon" href="img/favicon.png" type="image/x-icon">
+  <link rel="stylesheet" href="css/dashboard.css" />
+  <style>
+    .metric-icon svg {
+      width: 24px;
+      height: 24px;
+    }
+    .logs-header h2 svg {
+      width: 20px;
+      height: 20px;
+      vertical-align: middle;
+      margin-right: 4px;
+    }
+  </style>
+</head>
+<body>
+  <main class="content">
+    <section id="dashboard" class="page visible">
+      <!-- TOP METRICS CARDS -->
+      <div class="dashboard-header">
+        <h1>Dashboard</h1>
+        <p class="subtitle">Welcome back! Here's your attendance overview.</p>
+      </div>
+
+      <div class="metrics-grid">
+        <article class="metric-card accent-blue">
+          <div class="metric-header">
+            <h3>Total Subjects Enrolled</h3>
+            <span class="metric-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+              </svg>
+            </span>
+          </div>
+          <div class="metric-value" id="totalSubjects">—</div>
+        </article>
+
+        <article class="metric-card accent-yellow">
+          <div class="metric-header">
+            <h3>Total Absences</h3>
+            <span class="metric-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="15" y1="9" x2="9" y2="15"></line>
+                <line x1="9" y1="9" x2="15" y2="15"></line>
+              </svg>
+            </span>
+          </div>
+          <div class="metric-value" id="totalAbsences">—</div>
+        </article>
+
+        <article class="metric-card accent-orange">
+          <div class="metric-header">
+            <h3>Total Lates</h3>
+            <span class="metric-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+            </span>
+          </div>
+          <div class="metric-value" id="totalLates">—</div>
+        </article>
+
+        <article class="metric-card accent-purple">
+          <div class="metric-header">
+            <h3>Attendance Rate</h3>
+            <span class="metric-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="20" x2="18" y2="10"></line>
+                <line x1="12" y1="20" x2="12" y2="4"></line>
+                <line x1="6" y1="20" x2="6" y2="14"></line>
+              </svg>
+            </span>
+          </div>
+          <div class="metric-value" id="attendanceRate">—</div>
+        </article>
+      </div>
+
+      <!-- RECENT LOGS TABLE -->
+      <section class="logs-section">
+        <div class="logs-header">
+          <h2>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+            </svg>
+            Recent Attendance Logs
+          </h2>
+          <button id="viewAllLogsBtn" class="view-all-btn">View All Logs</button>
+        </div>
+        <table class="logs-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Subject</th>
+              <th>Status</th>
+              <th>Attendance Mode</th>
+              <th>Time</th>
+            </tr>
+          </thead>
+          <tbody id="logsTableBody">
+            <tr><td colspan="5" style="text-align:center;">No data available</td></tr>
+          </tbody>
+        </table>
+      </section>
+    </section>
+
+    <!-- ALL LOGS MODAL -->
+    <div id="allLogsModal" class="logs-modal">
+      <div class="logs-modal-content">
+        <div class="logs-modal-header">
+          <h2>All Attendance Logs</h2>
+          <button class="logs-modal-close" id="closeLogsModal">&times;</button>
+        </div>
+        <div class="logs-modal-body">
+          <table class="logs-modal-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Subject</th>
+                <th>Status</th>
+                <th>Attendance Mode</th>
+                <th>Time</th>
+              </tr>
+            </thead>
+            <tbody id="allLogsTableBody">
+              <!-- All logs dynamically loaded -->
+            </tbody>
+          </table>
+        </div>
+        <div class="modal-pagination">
+          <button id="prevLogsBtn" class="pagination-btn">← Previous</button>
+          <span id="logsPageInfo" class="page-info">Page 1 of 1</span>
+          <button id="nextLogsBtn" class="pagination-btn">Next →</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script type="module" src="js/dashboard-student.js"></script>
+  <script type="module" src="js/navigation.js"></script>
+</body>
+</html>

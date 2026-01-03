@@ -1,0 +1,86 @@
+{
+  "rules": {
+    "verificationRequests": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "users": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "teacherSubjects": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid"
+      }
+    },
+    "verifiedUsers": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "classes": {
+      ".read": "auth != null",
+      "$teacherId": {
+        ".write": "auth != null && auth.uid === $teacherId",
+        "$department": {
+          "$classId": {
+            "students": {
+              "$studentId": {
+                ".write": "auth != null && (auth.uid === $studentId || auth.uid === $teacherId)"
+              }
+            }
+          }
+        }
+      }
+    },
+    "attendance_sessions": {
+      ".read": true,
+      "$teacherId": {
+        ".write": "auth != null && auth.uid === $teacherId",
+        "$department": {
+          "$classId": {
+            "$sessionId": {
+              "attendees": {
+                "$studentId": {
+                  ".write": "auth != null"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "attendance": {
+      "$teacherId": {
+        "$department": {
+          "$classId": {
+            ".read": "auth != null",
+            ".write": "auth != null && auth.uid === $teacherId"
+          }
+        }
+      }
+    },
+    "excuseLetters": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "notifications": {
+      "$userId": {
+        ".read": "auth != null && auth.uid === $userId",
+        ".write": "auth != null"
+      }
+    },
+    "notification_sent": {
+      "$userId": {
+        ".read": "auth != null && auth.uid === $userId",
+        ".write": "auth != null && auth.uid === $userId"
+      }
+    },
+    "shortLinks": {
+      ".read": true,
+      "$linkId": {
+        ".write": "auth != null"
+      }
+    }
+  }
+}
