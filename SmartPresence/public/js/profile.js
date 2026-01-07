@@ -498,31 +498,36 @@ function loadUserSubjects(userId) {
         scheduleText = schedules.join(", ");
       }
       
-      // Determine which page to link to
-      let linkUrl;
-      if (cls.isTeacher) {
-        linkUrl = `${cls.department}.html?classId=${cls.classId}`;
-      } else {
-        // For students, pass class info as URL parameters
-        linkUrl = `classes-student.html?classId=${cls.classId}&teacherId=${cls.teacherId}&dept=${cls.department}`;
-      }
+let linkUrl;
+if (cls.isTeacher) {
+  linkUrl = `${cls.department.toLowerCase()}.html?classId=${cls.classId}`;
+} else {
+  // For students, pass class info as URL parameters
+  linkUrl = `classes-student.html?classId=${cls.classId}&teacherId=${cls.teacherId}&dept=${cls.department.toLowerCase()}`;
+}
       
       const roleText = cls.isTeacher 
         ? `<span class="role-badge teacher-badge">Teacher</span>${cls.studentCount ? ` • ${cls.studentCount} student${cls.studentCount !== 1 ? 's' : ''}` : ''}` 
         : '<span class="role-badge student-badge">Student</span>';
       
       classCard.innerHTML = `
-        <div class="card-header">
-          <h3>${cls.sectionName}</h3>
-          ${roleText}
-        </div>
-        <p class="subject-name">${cls.subjectName}</p>
-        <p class="department-info">${cls.department}</p>
-        <p class="schedule-info">${scheduleText}</p>
-        <button class="view-class-btn" onclick="window.location.href='${linkUrl}'">View ${cls.isTeacher ? 'Class' : 'Details'}</button>
-      `;
-      
-      subjectsContainer.appendChild(classCard);
+  <div class="card-header">
+    <h3>${cls.sectionName}</h3>
+    ${roleText}
+  </div>
+  <p class="subject-name">${cls.subjectName}</p>
+  <p class="department-info">${cls.department}</p>
+  <p class="schedule-info">${scheduleText}</p>
+  <button class="view-class-btn">View ${cls.isTeacher ? 'Class' : 'Details'}</button>
+`;
+
+// Add event listener properly
+const viewBtn = classCard.querySelector('.view-class-btn');
+viewBtn.addEventListener('click', () => {
+  window.location.href = linkUrl;
+});
+
+subjectsContainer.appendChild(classCard);
     });
     // Signal that subjects/content are rendered so entering animation can finish
     if (window.markContentReady) window.markContentReady();
